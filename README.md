@@ -1,5 +1,6 @@
 # SimpleCA
-# 小型 CA 认证系统 需求分析
+
+[![Build Status](https://travis-ci.com/520MianXiangDuiXiang520/SimpleCA.svg?branch=main)](https://travis-ci.com/520MianXiangDuiXiang520/SimpleCA)
 
 在非对称加密中，为了证明一个公开的密钥属于某个特定的用户，可以由一个双方都信任的机构（CA）为公钥和用户颁发一个证书，该证书中包含一个 CA 对证书内容的签名，如果 A 要与 B 进行加密通信，在通信前 A 会向 B 请求证书，证书中包含 B 的信息，公钥，签名算法， CA 机构， CA 签名等信息，A 拿到证书后使用 CA 机构的公钥对证书内容重新做签名，如果得到的结果与证书中 CA 机构的签名一致，说明证书未被篡改且 B合法拥有该公钥，之后 A 和 B 便可以使用该密钥对进行加密通信。
 
