@@ -18,3 +18,5 @@
 
 /setting.json
 .idea/*
+bin/*
+/simpleCA

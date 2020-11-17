@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	src.InitSetting("../setting.json")
+	src.InitSetting("./setting.json")
 	dao.InitDBSetting(10, 30, time.Second*100, true)
 }
 
