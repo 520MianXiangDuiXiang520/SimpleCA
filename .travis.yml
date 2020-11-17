@@ -1,0 +1,22 @@
+language: go
+go:
+  - '1.14'
+before_script:
+  - touch setting.json
+  - echo "{}" >> setting.json
+script:
+  - make build
+
+after_script: rm -rf setting.json
+#before_install:
+#  - openssl aes-256-cbc -k "$super_secret_password" -in id_rsa.enc -out ~/.ssh/id_rsa -d
+#  - eval "$(ssh-agent -s)"
+#  - chmod 600 ~/.ssh/id_rsa
+#  - ssh-add ~/.ssh/id_rsa
+#addons:
+#  ssh_known_hosts: 39.106.168.39
+#after_success:
+#  - ssh -i ~/.ssh/id_rsa root@39.106.168.39 "$path/restart.sh $path $imageID"
+#env:
+#  global:
+#    secure: WGXwFfdkM1Fcm2eF6jAOQH0qIIiJOK+v9//2EvzjgO/SPWlbjPEqu01g3P4XKMLPbGf9ok9O4XPZiZFKyUOol9YVE/2QmRw+t/PCXUsGSScC3mbaGMI+g+fv3mlnqMOywrRhBK6KsNVJCP/uK2ES6x/nusvVPa8S/gQix3a2QUNeCgAcfQZGq0+g+R19OePOPwxYxHK6F3ZOo3A0aUteGKU8/aUV7ZXfjLP4CFHyXlrJep/kinoUElFuXF4SsAKMklmTTXQasjhD5qUfGv7OjKp5QUwM3wSoORymAzeOXVIfhEuoTc/pGMBqVBHUoy5TGCjzQ/sYTACHwBcnFZoDni47L8PGPkYDpBmuW/Tw5Ih7DwcFbi0DE2Mwfy1w+jPNrotImxoXTZw8oVm8tT4nNXl5+EX+65nse6/S88URaAdKBs2w4MrPblPLY2Ux//8OBMU6gqNgP6YGH3DEpTGzl6CWpeV+l5KoLtth90BVt1RltmlU2YrqtvCKLMf6BGqG43naLK1gFLicwPVtqqvoQA4YGPVTzjB+U0S2CI0nIvRSJSuMA64TDQDMHd9HoSn9vsNuI/8icE1JZzwNHRt9qvbV/osGVMamMaOguj1IxkfWo+Il8Zq0tqIBf8AOogoqwm+u4TewIOEPvxb7guMVIZG70X+S92Rf66gp7bfs6s8=
