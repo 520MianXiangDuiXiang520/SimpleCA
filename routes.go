@@ -8,6 +8,7 @@ import (
 
 func Register(c *gin.Engine) {
 	// c.Use(middleware.ApiView(), middleware2.CorsHandler())
-	ginTools.URLPatterns(c, "api/ca", routes.ArticleRegister)
+	ginTools.URLPatterns(c, "api/ca", routes.CARegister)
+	ginTools.URLPatterns(c, "api/auth", routes.AuthRegister)
 
 }

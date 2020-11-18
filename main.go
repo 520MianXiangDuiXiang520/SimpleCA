@@ -3,13 +3,13 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"simple_ca/src"
-	"simple_ca/src/dao"
+	"simple_ca/src/dao/utils"
 	"time"
 )
 
 func init() {
 	src.InitSetting("./setting.json")
-	dao.InitDBSetting(10, 30, time.Second*100, true)
+	utils.InitDBSetting(10, 30, time.Second*100, true)
 }
 
 func main() {

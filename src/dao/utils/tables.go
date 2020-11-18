@@ -1,4 +1,4 @@
-package dao
+package utils
 
 import (
 	"github.com/jinzhu/gorm"
@@ -15,7 +15,7 @@ type User struct {
 // userToken 表
 type UserToken struct {
 	gorm.Model
-	UserID     int    `gorm:"not null"`
+	UserID     uint   `gorm:"not null"`
 	Token      string `gorm:"size:64;not null"`
 	ExpireTime int64  `gorm:"not null"`
 }
@@ -23,7 +23,7 @@ type UserToken struct {
 // 证书请求表
 type CARequest struct {
 	gorm.Model
-	UserID               int    `gorm:"not null"`
+	UserID               uint   `gorm:"not null"`
 	State                uint   `gorm:"not null"`
 	PublicKey            string `gorm:"type:text;not null"`
 	Country              string `gorm:"size:20"`
@@ -38,7 +38,7 @@ type CARequest struct {
 // 证书表
 type Certificate struct {
 	gorm.Model
-	UserID     int   `gorm:"not null"`
+	UserID     uint  `gorm:"not null"`
 	State      uint  `gorm:"not null"`
 	RequestID  int   `gorm:"not null"`
 	ExpireTime int64 `gorm:"not null"`
@@ -46,6 +46,6 @@ type Certificate struct {
 
 type CRL struct {
 	gorm.Model
-	CertificateID int   `gorm:"not null"`
+	CertificateID uint  `gorm:"not null"`
 	InputTime     int64 `gorm:"not null"`
 }

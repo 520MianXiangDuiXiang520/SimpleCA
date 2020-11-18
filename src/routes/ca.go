@@ -8,7 +8,7 @@ import (
 	"simple_ca/src/server"
 )
 
-func ArticleRegister(rg *gin.RouterGroup) {
+func CARegister(rg *gin.RouterGroup) {
 	rg.POST("/request", caRequestRoutes()...)
 }
 

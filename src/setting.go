@@ -17,8 +17,13 @@ type DBSetting struct {
 	Port     int    `json:"port"`
 }
 
+type AuthSetting struct {
+	TokenExpireTime int64 `json:"token_expire_time"` // token 过期时间，分钟
+}
+
 type Setting struct {
-	Database *DBSetting `json:"database"`
+	Database    *DBSetting   `json:"database"`
+	AuthSetting *AuthSetting `json:"auth_setting"`
 }
 
 func (setting *Setting) load(path string) {

@@ -97,7 +97,7 @@ type %resp% struct {
 type %req% struct {
 }
 
-func (r %req%) JSON(ctx *gin.Context) error {
+func (r *%req%) JSON(ctx *gin.Context) error {
     return ctx.ShouldBindJSON(&r)
 }"""
         func = f_text(func, self)
