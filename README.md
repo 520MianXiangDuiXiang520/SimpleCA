@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.com/520MianXiangDuiXiang520/SimpleCA.svg?branch=main)](https://travis-ci.com/520MianXiangDuiXiang520/SimpleCA)
 
+[API 文档](https://documenter.getpostman.com/view/9355097/TVev3jei#ec21108d-d16f-49a6-83c1-4aee91e42ceb)
+
 在非对称加密中，为了证明一个公开的密钥属于某个特定的用户，可以由一个双方都信任的机构（CA）为公钥和用户颁发一个证书，该证书中包含一个 CA 对证书内容的签名，如果 A 要与 B 进行加密通信，在通信前 A 会向 B 请求证书，证书中包含 B 的信息，公钥，签名算法， CA 机构， CA 签名等信息，A 拿到证书后使用 CA 机构的公钥对证书内容重新做签名，如果得到的结果与证书中 CA 机构的签名一致，说明证书未被篡改且 B合法拥有该公钥，之后 A 和 B 便可以使用该密钥对进行加密通信。
 
 本系统将实现一个小型的 CA 认证系统，它将以 Web 的形式接受用户的证书申请，管理员在后台验证通过后，将为其自动生成一个证书并通过邮件发送给申请者，同时，用户可以申请撤销自己持有的某个证书，证书被撤销后，将被加入到 CRL 列表中，用户可以访问特定的 API 获取最新的 CRL 列表数据。
