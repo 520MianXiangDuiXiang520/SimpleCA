@@ -1,7 +1,7 @@
 package routes
 
 import (
-	ginTools "github.com/520MianXiangDuiXiang520/GinTools"
+	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
 	"github.com/gin-gonic/gin"
 	"simple_ca/src/check"
 	"simple_ca/src/message"

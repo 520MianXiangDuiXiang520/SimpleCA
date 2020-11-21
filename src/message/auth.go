@@ -1,7 +1,7 @@
 package message
 
 import (
-	ginTools "github.com/520MianXiangDuiXiang520/GinTools"
+	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,9 +24,9 @@ type AuthRegisterResp struct {
 }
 
 type AuthRegisterReq struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
+	Username string `json:"username" check:"len: [1, 16]; not null"`
+	Password string `json:"password" check:"len: [5, 18]; not null"`
+	Email    string `json:"email"    check:"email; not null"`
 }
 
 func (r *AuthRegisterReq) JSON(ctx *gin.Context) error {

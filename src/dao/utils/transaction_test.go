@@ -2,25 +2,26 @@ package utils
 
 import (
 	"fmt"
+	daoUtils "github.com/520MianXiangDuiXiang520/GinTools/gin_tools/dao_tools"
 	"github.com/jinzhu/gorm"
 	"simple_ca/src"
+	"simple_ca/src/dao"
 	"testing"
 	"time"
 )
 
 func init() {
-	src.InitSetting("../../../setting.json")
-	InitDBSetting(10, 30, time.Second*100, true)
+	daoUtils.InitDBSetting(src.GetSetting().Database, 10, 30, time.Second*100, true)
 }
 
 func TestUseTransaction(t *testing.T) {
-	r, _ := UseTransaction(func(db *gorm.DB, id uint, token string) error {
-		return db.Create(&UserToken{
+	r, _ := daoUtils.UseTransaction(func(db *gorm.DB, id uint, token string) error {
+		return db.Create(&dao.UserToken{
 			UserID:     id,
 			Token:      token,
 			ExpireTime: 99,
 		}).Error
-	}, []interface{}{&gorm.DB{}, 1, "19999"})
+	}, []interface{}{&gorm.DB{}, uint(1), "19999"})
 	for _, v := range r {
 		fmt.Println(v.Interface())
 	}

@@ -2,12 +2,12 @@ package server
 
 import (
 	"fmt"
-	ginTools "github.com/520MianXiangDuiXiang520/GinTools"
+	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
 	"github.com/gin-gonic/gin"
 	"simple_ca/src/dao"
-	"simple_ca/src/dao/utils"
 	"simple_ca/src/message"
 	"simple_ca/src/tools"
+	"time"
 )
 
 // 登录逻辑
@@ -15,14 +15,14 @@ func AuthLoginLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 	request := req.(*message.AuthLoginReq)
 	resp := message.AuthLoginResp{}
 	pwd := tools.HashBySHA256([]string{request.Password})
-	user, ok := dao.HasUser(request.Username, pwd)
+	user, ok := dao.HasUserByUP(request.Username, pwd)
 	if !ok {
 		resp.Header = ginTools.ParamErrorRespHeader
 		return resp
 	}
 	// md5 获取 token
 	token := tools.HashByMD5([]string{
-		pwd, fmt.Sprintf("%v", request),
+		pwd, fmt.Sprintf("%v%v", request, time.Now().Nanosecond()),
 	})
 	// 写入 token
 	if !dao.InsertToken(user, token) {
@@ -39,7 +39,7 @@ func AuthRegisterLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.Bas
 	request := req.(*message.AuthRegisterReq)
 	resp := message.AuthRegisterResp{}
 	pwd := tools.HashBySHA256([]string{request.Password})
-	newUser := &utils.User{
+	newUser := &dao.User{
 		Username: request.Username,
 		Password: pwd,
 		Email:    request.Email,

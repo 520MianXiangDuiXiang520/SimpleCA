@@ -2,7 +2,7 @@ package check
 
 import (
 	"errors"
-	ginTools "github.com/520MianXiangDuiXiang520/GinTools"
+	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"

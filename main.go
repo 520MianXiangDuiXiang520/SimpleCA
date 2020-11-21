@@ -1,15 +1,14 @@
 package main
 
 import (
+	daoTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools/dao_tools"
 	"github.com/gin-gonic/gin"
 	"simple_ca/src"
-	"simple_ca/src/dao/utils"
 	"time"
 )
 
 func init() {
-	src.InitSetting("./setting.json")
-	utils.InitDBSetting(10, 30, time.Second*100, true)
+	daoTools.InitDBSetting(src.GetSetting().Database, 10, 30, time.Second*100, true)
 }
 
 func main() {

@@ -1,4 +1,4 @@
-package utils
+package dao
 
 import (
 	"github.com/jinzhu/gorm"
@@ -10,6 +10,10 @@ type User struct {
 	Username string `gorm:"size:16;not null;unique"`
 	Password string `gorm:"not null"`
 	Email    string
+}
+
+func (u *User) GetID() int {
+	return int(u.ID)
 }
 
 // userToken 表
