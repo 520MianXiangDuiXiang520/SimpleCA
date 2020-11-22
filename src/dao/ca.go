@@ -37,33 +37,32 @@ func HasCRSByID(id uint) (ok bool) {
 	return crs.ID == id
 }
 
+func GetCRSByID(id uint) (*CARequest, bool) {
+	csr, err := selectCRSByID(id)
+	if err != nil || csr.ID != id {
+		msg := fmt.Sprintf("Fail to select crs by id(%d)", id)
+		utils.ExceptionLog(err, msg)
+		return nil, false
+	}
+	return csr, true
+}
+
 func selectCRSByID(id uint) (crs *CARequest, err error) {
 	crs = &CARequest{}
 	err = daoUtils.GetDB().Where("id = ?", id).First(crs).Error
 	return crs, err
 }
 
-func AddPublicKeyForRequest(crsID uint, pk string, uid uint) (*CARequest, bool) {
-	crs, err := selectCRSByID(crsID)
+func AddPublicKeyForRequest(csr *CARequest, pk string, uid uint) (*CARequest, bool) {
+	csr.PublicKey = pk
+	csr.State = definition.CRSStateAuditing
+	err := updateCRSByID(daoUtils.GetDB(), csr, csr.ID)
 	if err != nil {
-		msg := fmt.Sprintf("Fail to select crs by id(%d)", crsID)
+		msg := fmt.Sprintf("Fail to update csr, csr = %v", csr)
 		utils.ExceptionLog(err, msg)
 		return nil, false
 	}
-	if crs.UserID != uid {
-		utils.ExceptionLog(errors.New("[403] Unauthorized access"),
-			fmt.Sprintf("User %d accesses user %d’s data without permission", uid, crs.UserID))
-		return nil, false
-	}
-	crs.PublicKey = pk
-	crs.State = definition.CRSStateAuditing
-	err = updateCRSByID(daoUtils.GetDB(), crs, crs.ID)
-	if err != nil {
-		msg := fmt.Sprintf("Fail to update crs, crs = %v", crs)
-		utils.ExceptionLog(err, msg)
-		return nil, false
-	}
-	return crs, true
+	return csr, true
 }
 
 func updateCRSByID(db *gorm.DB, crs *CARequest, id uint) (err error) {

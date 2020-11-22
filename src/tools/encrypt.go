@@ -6,9 +6,10 @@ import (
 	"crypto/des"
 	"crypto/md5"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
+	utils "github.com/520MianXiangDuiXiang520/GinTools/log_tools"
 	"simple_ca/src"
 	"strings"
 )
@@ -33,10 +34,15 @@ func HashByMD5(strList []string) (h string) {
 }
 
 // 解密
-func DecryptWithDES(msg string) string {
+func DecryptWithDES(msgSplit []byte) (r string, ok bool) {
+	defer func() {
+		if err := recover(); err != nil {
+			utils.ExceptionLog(errors.New("DecryptFail"),
+				fmt.Sprintf("%s Decryption failed： %v", msgSplit, err))
+			ok = false
+		}
+	}()
 	keySplit := []byte(src.GetSetting().Secret.ResponseSecret)
-	msgSplit, _ := base64.StdEncoding.DecodeString(msg)
-	fmt.Println(msgSplit, msg)
 	// 获取block块
 	block, _ := des.NewTripleDESCipher(keySplit)
 	// 创建切片
@@ -46,20 +52,33 @@ func DecryptWithDES(msg string) string {
 	// 解密密文到数组
 	blockMode.CryptBlocks(context, msgSplit)
 	// 去补码
-	context = PKCSUnPadding(context)
+	context, ok = PKCSUnPadding(context)
+	if !ok {
+		return "", false
+	}
 	len := int(context[0])
-	return string(context[1 : len+1])
+	return string(context[1 : len+1]), true
 }
 
 // 去码
-func PKCSUnPadding(origData []byte) []byte {
+func PKCSUnPadding(origData []byte) ([]byte, bool) {
 	length := len(origData)
 	unPadding := int(origData[length-1])
-	return origData[:length-unPadding]
+	if unPadding > length {
+		return nil, false
+	}
+	return origData[:length-unPadding], true
 }
 
 // 加密
-func EncryptWithDES(msg string) string {
+func EncryptWithDES(msg string) (r []byte, ok bool) {
+	defer func() {
+		if err := recover(); err != nil {
+			utils.ExceptionLog(errors.New("EncryptFail"),
+				fmt.Sprintf("%s Encryption failed： %v", msg, err))
+			ok = false
+		}
+	}()
 	msgSplit := []byte(msg)
 	msgSplit = []byte{byte(len(msgSplit))}
 	msgSplit = append(msgSplit, []byte(msg)...)
@@ -74,7 +93,7 @@ func EncryptWithDES(msg string) string {
 	crypt := make([]byte, len(msgSplit))
 	// 加密明文
 	blockMode.CryptBlocks(crypt, msgSplit)
-	return base64.StdEncoding.EncodeToString(crypt)
+	return crypt, true
 }
 
 // 补码
