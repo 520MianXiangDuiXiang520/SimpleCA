@@ -24,3 +24,7 @@ func AuthRegisterCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.Ba
 	}
 	return http.StatusOK, nil
 }
+
+func AuthLogoutCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespInter, error) {
+	return http.StatusOK, nil
+}

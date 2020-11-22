@@ -33,3 +33,14 @@ func (r *AuthRegisterReq) JSON(ctx *gin.Context) error {
 	err := ctx.ShouldBindJSON(&r)
 	return err
 }
+
+type AuthLogoutResp struct {
+	Header ginTools.BaseRespHeader `json:"header"`
+}
+
+type AuthLogoutReq struct {
+}
+
+func (r *AuthLogoutReq) JSON(ctx *gin.Context) error {
+	return ctx.ShouldBindJSON(&r)
+}

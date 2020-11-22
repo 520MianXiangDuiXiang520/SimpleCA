@@ -13,6 +13,7 @@ import (
 func CARegister(rg *gin.RouterGroup) {
 	rg.POST("/request", caRequestRoutes()...)
 	rg.POST("/csr", caCsrRoutes()...)
+
 }
 
 func caRequestRoutes() []gin.HandlerFunc {

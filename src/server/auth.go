@@ -51,3 +51,19 @@ func AuthRegisterLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.Bas
 	resp.Header = ginTools.SuccessRespHeader
 	return resp
 }
+
+func AuthLogoutLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
+	resp := message.AuthLogoutResp{}
+	user, ok := ctx.Get("user")
+	if !ok {
+		resp.Header = ginTools.UnauthorizedRespHeader
+		return resp
+	}
+	u := user.(*dao.User)
+	if !dao.DeleteTokenByUserID(u.ID) {
+		resp.Header = ginTools.SystemErrorRespHeader
+		return resp
+	}
+	resp.Header = ginTools.SuccessRespHeader
+	return resp
+}

@@ -53,15 +53,24 @@ func insertToken(db *gorm.DB, user *User, token string) (err error) {
 	return err
 }
 
-func deleteTokenByUser(db *gorm.DB, user *User) (err error) {
-	err = db.Where("user_id = ?", user.ID).Delete(&UserToken{}).Error
+func deleteTokenByUserID(db *gorm.DB, userID uint) (err error) {
+	err = db.Where("user_id = ?", userID).Delete(&UserToken{}).Error
 	return err
+}
+
+func DeleteTokenByUserID(uid uint) bool {
+	if err := deleteTokenByUserID(daoUtils.GetDB(), uid); err != nil {
+		msg := fmt.Sprintf("Fail to delete token by userID(%d)", uid)
+		utils.ExceptionLog(err, msg)
+		return false
+	}
+	return true
 }
 
 func InsertToken(user *User, token string) (ok bool) {
 	// 使用事务，保证一致性
 	_, err := daoUtils.UseTransaction(func(db *gorm.DB, user *User, token string) (err error) {
-		err = deleteTokenByUser(db, user)
+		err = deleteTokenByUserID(db, user.ID)
 		if err != nil {
 			return
 		}
