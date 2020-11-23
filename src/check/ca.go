@@ -1,28 +1,24 @@
 package check
 
 import (
+	"errors"
 	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
-	"github.com/520MianXiangDuiXiang520/GinTools/log_tools"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"regexp"
 	"simple_ca/src/message"
+	"simple_ca/src/tools"
 )
 
 func checkPublicKey(str string) bool {
-	re, err := regexp.Compile("^-----BEGIN [A-Z ]*PUBLIC KEY-----[a-zA-Z\\n0-9/+]*-----END [A-Z ]*PUBLIC KEY-----$")
-	if err != nil {
-		utils.ExceptionLog(err, "compile public key Fail")
-		return false
-	}
-	return re.MatchString(str)
+	_, ok := tools.DecodeRSAPublicKey([]byte(str))
+	return ok
 }
 
 func CaRequestCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespInter, error) {
-	_ = req.(*message.CaCodeSignatureRequestReq)
-	// if !checkPublicKey(r.PublicKey) {
-	//     return ginTools.ParamErrorRespHeader, errors.New("")
-	// }
+	r := req.(*message.CaCodeSignatureRequestReq)
+	if !checkPublicKey(r.PublicKey) {
+		return ginTools.ParamErrorRespHeader, errors.New("")
+	}
 	return http.StatusOK, nil
 }
 

@@ -21,3 +21,7 @@
 bin/*
 /simpleCA
 /bin/
+
+*.pem
+*.key
+*.cer

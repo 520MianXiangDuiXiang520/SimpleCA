@@ -44,7 +44,7 @@ type Certificate struct {
 	gorm.Model
 	UserID     uint  `gorm:"not null"`
 	State      uint  `gorm:"not null"`
-	RequestID  int   `gorm:"not null"`
+	RequestID  uint  `gorm:"not null"`
 	ExpireTime int64 `gorm:"not null"`
 }
 

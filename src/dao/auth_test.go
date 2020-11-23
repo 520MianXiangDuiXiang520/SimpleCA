@@ -1,7 +1,7 @@
 package dao
 
 import (
-	daoUtils "github.com/520MianXiangDuiXiang520/GinTools/utils/dao"
+	daoUtils "github.com/520MianXiangDuiXiang520/GinTools/gin_tools/dao_tools"
 	"simple_ca/src"
 	"testing"
 	"time"

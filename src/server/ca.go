@@ -5,6 +5,7 @@ import (
 	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"simple_ca/src"
 	"simple_ca/src/dao"
 	"simple_ca/src/definition"
 	"simple_ca/src/message"
@@ -30,7 +31,7 @@ func CaRequestLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 	}
 
 	// DES 解密
-	csrIDString, ok := tools.DecryptWithDES(msgSplit)
+	csrIDString, ok := tools.DecryptWithDES(msgSplit, src.GetSetting().Secret.ResponseSecret)
 	if !ok {
 		resp.Header = ginTools.ParamErrorRespHeader
 		return resp
@@ -102,7 +103,7 @@ func CaCsrLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespIn
 		resp.Header = ginTools.SystemErrorRespHeader
 		return resp
 	}
-	encryptID, ok := tools.EncryptWithDES(strconv.Itoa(int(newCSR.ID)))
+	encryptID, ok := tools.EncryptWithDES(strconv.Itoa(int(newCSR.ID)), src.GetSetting().Secret.ResponseSecret)
 	if !ok {
 		resp.Header = ginTools.SystemErrorRespHeader
 		return resp

@@ -23,3 +23,15 @@ type AuditListReq struct {
 func (r *AuditListReq) JSON(ctx *gin.Context) error {
 	return ctx.ShouldBindJSON(&r)
 }
+
+type AuditPassResp struct {
+	Header ginTools.BaseRespHeader `json:"header"`
+}
+
+type AuditPassReq struct {
+	CSRID string `json:"csr_id"` // CSR ID 3DES 加密后 Base64 编码
+}
+
+func (r *AuditPassReq) JSON(ctx *gin.Context) error {
+	return ctx.ShouldBindJSON(&r)
+}
