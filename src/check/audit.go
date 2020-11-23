@@ -15,7 +15,9 @@ func AuditListCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseR
 }
 
 func AuditPassCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespInter, error) {
-	request := req.(*message.AuditPassReq)
-	fmt.Println(request)
+	return http.StatusOK, nil
+}
+
+func AuditUnPassCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespInter, error) {
 	return http.StatusOK, nil
 }

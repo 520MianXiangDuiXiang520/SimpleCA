@@ -11,6 +11,7 @@ import (
 func AuditRegister(rg *gin.RouterGroup) {
 	rg.POST("/list", auditListRoutes()...)
 	rg.POST("/pass", auditPassRoutes()...)
+	rg.POST("/unpass", auditUnPassRoutes()...)
 }
 
 func auditListRoutes() []gin.HandlerFunc {
@@ -24,5 +25,12 @@ func auditPassRoutes() []gin.HandlerFunc {
 	return []gin.HandlerFunc{
 		ginTools.EasyHandler(check.AuditPassCheck,
 			server.AuditPassLogic, message.AuditPassReq{}),
+	}
+}
+
+func auditUnPassRoutes() []gin.HandlerFunc {
+	return []gin.HandlerFunc{
+		ginTools.EasyHandler(check.AuditUnPassCheck,
+			server.AuditUnPassLogic, message.AuditUnPassReq{}),
 	}
 }

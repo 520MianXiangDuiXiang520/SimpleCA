@@ -43,34 +43,44 @@ func AuditListLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 	return resp
 }
 
+func checkCSRID(CSRID string) (*dao.CARequest, bool) {
+	csrIDBytes, err := base64.StdEncoding.DecodeString(CSRID)
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Base64 decoding failed， input = %s", CSRID))
+		return nil, false
+	}
+	csrIDStr, ok := tools.DecryptWithDES(csrIDBytes, src.GetSetting().Secret.ResponseSecret)
+	if !ok {
+		return nil, false
+	}
+	csrID, err := strconv.Atoi(csrIDStr)
+	if err != nil {
+		return nil, false
+	}
+	csr, ok := dao.GetCRSByID(uint(csrID))
+	if !ok {
+		return nil, false
+	}
+	return csr, true
+}
+
 func AuditPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
 	request := req.(*message.AuditPassReq)
 	resp := message.AuditPassResp{}
 	// 管理员身份验证
-	csrIDBytes, err := base64.StdEncoding.DecodeString(request.CSRID)
-	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Base64 decoding failed， input = %s", request.CSRID))
-		resp.Header = ginTools.ParamErrorRespHeader
-		return resp
-	}
-	csrIDStr, ok := tools.DecryptWithDES(csrIDBytes, src.GetSetting().Secret.ResponseSecret)
+	csr, ok := checkCSRID(request.CSRID)
 	if !ok {
 		resp.Header = ginTools.ParamErrorRespHeader
 		return resp
 	}
-	csrID, err := strconv.Atoi(csrIDStr)
-	if err != nil {
-		resp.Header = ginTools.ParamErrorRespHeader
-		return resp
-	}
-	csr, ok := dao.GetCRSByID(uint(csrID))
+
 	if csr.State != definition.CRSStateAuditing {
 		resp.Header = ginTools.ParamErrorRespHeader
 		return resp
 	}
 
 	// 修改 CSR 状态
-	csr, ok = dao.SetCSRState(csr, definition.CRSStateUnPass)
+	csr, ok = dao.SetCSRState(csr, definition.CRSStatePass)
 	if !ok {
 		resp.Header = ginTools.SystemErrorRespHeader
 		return resp
@@ -105,6 +115,32 @@ func AuditPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 		return resp
 	}
 	// 邮件通知用户
+	resp.Header = ginTools.SuccessRespHeader
+	return resp
+}
+
+func AuditUnPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
+	request := req.(*message.AuditUnPassReq)
+	resp := message.AuditUnPassResp{}
+	csr, ok := checkCSRID(request.CSRID)
+	if !ok {
+		resp.Header = ginTools.ParamErrorRespHeader
+		return resp
+	}
+
+	if csr.State != definition.CRSStateAuditing {
+		resp.Header = ginTools.ParamErrorRespHeader
+		return resp
+	}
+
+	// 修改 CSR 状态
+	csr, ok = dao.SetCSRState(csr, definition.CRSStateUnPass)
+	if !ok {
+		resp.Header = ginTools.SystemErrorRespHeader
+		return resp
+	}
+
+	// 邮件通知
 	resp.Header = ginTools.SuccessRespHeader
 	return resp
 }
