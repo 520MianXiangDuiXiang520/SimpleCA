@@ -119,3 +119,14 @@ func GetUserByToken(token string) (user *User, ok bool) {
 	}
 	return user, true
 }
+
+func GetUserByName(name string) (*User, bool) {
+	u := User{}
+	err := daoUtils.GetDB().Where("username = ?", name).First(&u).Error
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("select user by name (%s) Fail", name))
+		return nil, false
+	}
+	return &u, true
+
+}

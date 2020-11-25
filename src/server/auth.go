@@ -4,6 +4,7 @@ import (
 	"fmt"
 	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"simple_ca/src/dao"
 	"simple_ca/src/message"
 	"simple_ca/src/tools"
@@ -38,6 +39,13 @@ func AuthLoginLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 func AuthRegisterLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
 	request := req.(*message.AuthRegisterReq)
 	resp := message.AuthRegisterResp{}
+	if _, ok := dao.GetUserByName(request.Username); ok {
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusBadRequest,
+			Msg:  "用户名已存在！",
+		}
+		return resp
+	}
 	pwd := tools.HashBySHA256([]string{request.Password})
 	newUser := &dao.User{
 		Username: request.Username,

@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"fmt"
 	daoUtils "github.com/520MianXiangDuiXiang520/GinTools/gin_tools/dao_tools"
 	"simple_ca/src"
 	"testing"
@@ -29,4 +30,9 @@ func TestHasUserByID(t *testing.T) {
 	if o {
 		t.Error("Fail")
 	}
+}
+
+func TestGetUserByName(t *testing.T) {
+	u, ok := GetUserByName("ggdjs")
+	fmt.Println(u, ok)
 }
