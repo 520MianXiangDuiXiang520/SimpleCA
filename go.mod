@@ -3,7 +3,7 @@ module simple_ca
 go 1.14
 
 require (
-	github.com/520MianXiangDuiXiang520/GinTools v0.0.0-20201121071302-58d6559cddcb
+	github.com/520MianXiangDuiXiang520/GinTools v0.0.0-20201124124451-2b99ae9f8649
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/golang/protobuf v1.4.3 // indirect

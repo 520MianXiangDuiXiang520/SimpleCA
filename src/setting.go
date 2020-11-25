@@ -33,10 +33,20 @@ type Secret struct {
 	CertificateEffectiveTime int64                                 `json:"certificate_effective_time"` // 证书有效时长，单位天
 }
 
+// SMTP 连接相关配置
+type SMTPSetting struct {
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type Setting struct {
 	Database    *settingTools.DBSetting `json:"database"`
 	AuthSetting *AuthSetting            `json:"auth_setting"`
 	Secret      *Secret                 `json:"secret"`
+	SMTPSetting *SMTPSetting            `json:"smtp_setting"`
+	SiteLink    string                  `json:"site_link"`
 }
 
 var setting = &Setting{}

@@ -1,0 +1,71 @@
+<style class="fox_global_style">
+    div.fox_html_content {
+        line-height: 1.5;
+    }
+
+    /* 一些默认样式 */
+    blockquote {
+        margin-Top: 0px;
+        margin-Bottom: 0px;
+        margin-Left: 0.5em
+    }
+
+    ol,
+    ul {
+        margin-Top: 0px;
+        margin-Bottom: 0px;
+        list-style-position: inside;
+    }
+
+    p {
+        margin-Top: 0px;
+        margin-Bottom: 0px
+    }
+</style>
+<title></title>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+        <tr>
+            <td colspan="6">
+                <table border="0" cellpadding="0" cellspacing="0" height="50" width="100%" bgcolor="#222222"
+                    style="background-color:#222222;">
+                    <tbody>
+                        <tr width="100%" border="0">
+                            <td height="50" width="120" colspan="1" align="cneter"
+                                style="color: white; font-size: 16px; line-height: 50px; padding:7px 0 13px 15px; "><a
+                                    href="{# siteLink #}" style="color:#a7abbe;text-decoration: none;color:inherit;">
+                                    SimpleCA </a></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="6" width="90%">&nbsp;</td>
+        </tr>
+        <tr>
+            <td>
+                <div style="margin:50px 15px 40px 15px">
+                    <p><br></p>
+                    <p>尊敬的 <b>{# username #}</b> 您好：</p><br>
+                    <p>很抱歉，您于 {# requestTime #} 在 <a href="{# siteLink #}"> SimpleCA </a>上申请的证书未通过审核，请检查您提供的 CRS 信息的正确性。</p>
+                    <br>
+                    <p style="float: right;"> SimpleCA </p>
+                    <br>
+                    <p style="float: right;"> {# time #}</p>
+                </div>
+                <div style="margin:0px 15px 0px 15px">
+                    <hr style="margin-left: initial;width: 100%; border:1px dashed #987cb9 ">
+                    <p id="p-email" style="color: #999;font-size: 14px;margin-top:10px;margin-bottom:40px">
+                        本邮件由系统自动发送，请勿直接回复！</p>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+</table>
