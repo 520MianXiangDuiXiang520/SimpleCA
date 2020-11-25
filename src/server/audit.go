@@ -4,6 +4,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/base64"
 	"fmt"
+	"github.com/520MianXiangDuiXiang520/GinTools/email_tools"
 	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
 	utils "github.com/520MianXiangDuiXiang520/GinTools/log_tools"
 	"github.com/gin-gonic/gin"
@@ -85,11 +86,19 @@ func AuditPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 		resp.Header = ginTools.SystemErrorRespHeader
 		return resp
 	}
-	// 落库
-	// long := src.GetSetting().Secret.CertificateEffectiveTime
+
+	user, ok := dao.HasUserByID(csr.UserID)
+	if !ok {
+		resp.Header = ginTools.SystemErrorRespHeader
+		return resp
+	}
+
 	notBefore := time.Now()
+	// 证书有效时间为 365 天
 	notAfter := time.Now().Add(time.Hour * 24 * 365)
 	expireTime := time.Now().Unix() + definition.WrongOneYear
+
+	// 落库存储
 	c, ok := dao.CreateNewCertificate(&dao.Certificate{
 		State:      definition.CertificateStateUsing,
 		ExpireTime: expireTime,
@@ -97,7 +106,10 @@ func AuditPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 		RequestID:  csr.ID,
 	})
 	// 生成证书
+	cerFileName := fmt.Sprintf("../cers/%d_%v_%v.cer", user.ID, user.Username, time.Now().Nanosecond())
+	// 获取 CA 根证书和私钥
 	rootCer, rootPK := src.GetCARootCer()
+	// 根据 CA 根证书和私钥为用户签发证书
 	ok = tools.CreateNewCertificate(&rootCer, big.NewInt(int64(int(c.ID))), pkix.Name{
 		Country:            []string{csr.Country},
 		Province:           []string{csr.Province},
@@ -105,8 +117,7 @@ func AuditPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 		Organization:       []string{csr.Organization},
 		OrganizationalUnit: []string{csr.OrganizationUnitName},
 		CommonName:         csr.CommonName,
-	}, csr.PublicKey, &rootPK, notBefore, notAfter,
-		fmt.Sprintf("../cers/junebao_%v.cer", time.Now().Nanosecond()))
+	}, csr.PublicKey, &rootPK, notBefore, notAfter, cerFileName)
 	if !ok {
 		resp.Header = ginTools.BaseRespHeader{
 			Code: http.StatusInternalServerError,
@@ -115,6 +126,27 @@ func AuditPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 		return resp
 	}
 	// 邮件通知用户
+	emailTemp := definition.CerSuccessTemp(map[string]string{
+		"siteLink":    src.GetSetting().SiteLink,
+		"username":    user.Username,
+		"requestTime": csr.CreatedAt.Format("2006-01-02 15:04:05"),
+		"time":        time.Now().Format("2006-01-02 15:04:05"),
+	})
+	err := email_tools.Send(&email_tools.EmailCTX{
+		ToList: []email_tools.EmailUser{
+			{Address: user.Email, Name: user.Username},
+		},
+		Subject: "证书申请通过通知",
+		Body:    emailTemp,
+		Path:    cerFileName,
+	})
+	if err != nil {
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusInternalServerError,
+			Msg:  "证书申请已通过，但颁发失败，请联系用户：" + user.Email,
+		}
+		return resp
+	}
 	resp.Header = ginTools.SuccessRespHeader
 	return resp
 }
@@ -133,6 +165,12 @@ func AuditUnPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.Base
 		return resp
 	}
 
+	user, ok := dao.HasUserByID(csr.UserID)
+	if !ok {
+		resp.Header = ginTools.SystemErrorRespHeader
+		return resp
+	}
+
 	// 修改 CSR 状态
 	csr, ok = dao.SetCSRState(csr, definition.CRSStateUnPass)
 	if !ok {
@@ -141,6 +179,26 @@ func AuditUnPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.Base
 	}
 
 	// 邮件通知
+	emailTemp := definition.CerUnPassTemp(map[string]string{
+		"siteLink":    src.GetSetting().SiteLink,
+		"username":    user.Username,
+		"requestTime": csr.CreatedAt.Format("2006-01-02 15:04:05"),
+		"time":        time.Now().Format("2006-01-02 15:04:05"),
+	})
+	err := email_tools.Send(&email_tools.EmailCTX{
+		ToList: []email_tools.EmailUser{
+			{Address: user.Email, Name: user.Username},
+		},
+		Subject: "证书申请通过通知",
+		Body:    emailTemp,
+	})
+	if err != nil {
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusInternalServerError,
+			Msg:  "证书申请未通过，但邮件通知失败，请联系用户：" + user.Email,
+		}
+		return resp
+	}
 	resp.Header = ginTools.SuccessRespHeader
 	return resp
 }
