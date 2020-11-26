@@ -2,9 +2,11 @@ package routes
 
 import (
 	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
+	middlewareTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools/middleware"
 	"github.com/gin-gonic/gin"
 	"simple_ca/src/check"
 	"simple_ca/src/message"
+	"simple_ca/src/middleware"
 	"simple_ca/src/server"
 )
 
@@ -16,6 +18,8 @@ func AuditRegister(rg *gin.RouterGroup) {
 
 func auditListRoutes() []gin.HandlerFunc {
 	return []gin.HandlerFunc{
+		middlewareTools.Auth(middleware.TokenAuth),
+		middlewareTools.Permiter(middleware.AdminPermit),
 		ginTools.EasyHandler(check.AuditListCheck,
 			server.AuditListLogic, message.AuditListReq{}),
 	}
@@ -23,6 +27,8 @@ func auditListRoutes() []gin.HandlerFunc {
 
 func auditPassRoutes() []gin.HandlerFunc {
 	return []gin.HandlerFunc{
+		middlewareTools.Auth(middleware.TokenAuth),
+		middlewareTools.Permiter(middleware.AdminPermit),
 		ginTools.EasyHandler(check.AuditPassCheck,
 			server.AuditPassLogic, message.AuditPassReq{}),
 	}
@@ -30,6 +36,8 @@ func auditPassRoutes() []gin.HandlerFunc {
 
 func auditUnPassRoutes() []gin.HandlerFunc {
 	return []gin.HandlerFunc{
+		middlewareTools.Auth(middleware.TokenAuth),
+		middlewareTools.Permiter(middleware.AdminPermit),
 		ginTools.EasyHandler(check.AuditUnPassCheck,
 			server.AuditUnPassLogic, message.AuditUnPassReq{}),
 	}

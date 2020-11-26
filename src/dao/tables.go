@@ -7,9 +7,10 @@ import (
 // 用户表
 type User struct {
 	gorm.Model
-	Username string `gorm:"size:16;not null;unique"`
-	Password string `gorm:"not null"`
-	Email    string
+	Username  string `gorm:"size:16;not null;unique"`
+	Password  string `gorm:"not null"`
+	Email     string
+	Authority uint // 权限：1 管理员权限
 }
 
 func (u *User) GetID() int {
