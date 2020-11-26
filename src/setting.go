@@ -29,6 +29,7 @@ type Secret struct {
 	ResponseSecret           string                                `json:"response_secret"`
 	CARootPrivateKeyName     string                                `json:"ca_root_private_key_name"`
 	CARootPrivateKeyLen      int                                   `json:"ca_root_private_key_len"`
+	UserCerPath              string                                `json:"user_cer_path"`
 	CARootCerName            string                                `json:"ca_root_cer_name"`
 	CAIssuerInfo             *definition.CertificateSigningRequest `json:"ca_issuer_info"`
 	CertificateEffectiveTime int64                                 `json:"certificate_effective_time"` // 证书有效时长，单位天

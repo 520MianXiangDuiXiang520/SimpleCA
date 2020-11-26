@@ -12,5 +12,5 @@ func Register(c *gin.Engine) {
 	ginTools.URLPatterns(c, "api/ca", routes.CARegister)
 	ginTools.URLPatterns(c, "api/auth", routes.AuthRegister)
 	ginTools.URLPatterns(c, "api/audit", routes.AuditRegister)
-
+	ginTools.URLPatterns(c, "api/user", routes.UserRegister)
 }

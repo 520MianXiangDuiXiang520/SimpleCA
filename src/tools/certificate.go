@@ -40,8 +40,6 @@ func DecodePemCert(p string) (*x509.Certificate, bool) {
 
 func CreateNewCertificate(rootCer *x509.Certificate, serialN *big.Int, subject pkix.Name,
 	publicKey string, pk *rsa.PrivateKey, notBefore, notAfter time.Time, CRLDistributionPoint []string, p string) bool {
-	_, currently, _, _ := runtime.Caller(1)
-	filename := path.Join(path.Dir(currently), p)
 	template := &x509.Certificate{
 		Version:            1,
 		SerialNumber:       serialN,
@@ -71,9 +69,9 @@ func CreateNewCertificate(rootCer *x509.Certificate, serialN *big.Int, subject p
 		utils.ExceptionLog(err, "Failed to create certificate")
 		return false
 	}
-	certOut, err := os.Create(filename)
+	certOut, err := os.Create(p)
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Failed to create %s", filename))
+		utils.ExceptionLog(err, fmt.Sprintf("Failed to create %s", p))
 		return false
 	}
 	err = pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: c})
