@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
 	"github.com/gin-gonic/gin"
-	"log"
 	"math/big"
 	"net/http"
 	"simple_ca/src"
@@ -149,7 +148,7 @@ func CaCrlLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespIn
 
 	// crl 信息落库
 	cTime := time.Now().Unix()
-	_, err := dao.CreateNewCRL(request.SerialNumber, cTime)
+	_, err := dao.CreateNewCRL(cer.RequestID, request.SerialNumber, cTime)
 	if err != nil {
 		resp.Header = ginTools.SystemErrorRespHeader
 		return resp
@@ -160,7 +159,6 @@ func CaCrlLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespIn
 		resp.Header = ginTools.SystemErrorRespHeader
 		return resp
 	}
-	log.Println(request)
 	resp.Header = ginTools.SuccessRespHeader
 	return resp
 }

@@ -113,11 +113,26 @@ func insertNewCRL(db *gorm.DB, serial uint, expire int64) (*CRL, error) {
 	return &crl, nil
 }
 
+func updateCertificateStateByID(db *gorm.DB, state, id uint) error {
+	err := db.Model(&Certificate{}).Where("id = ?",
+		id).Updates(map[string]interface{}{"state": state}).Error
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to update Certificate state(%d) by id(%d)", state, id))
+		return err
+	}
+	return err
+}
+
 // 生成一条新的 CRL 信息
-func CreateNewCRL(serialNum uint, expired int64) (*CRL, error) {
+func CreateNewCRL(csrID, serialNum uint, expired int64) (*CRL, error) {
 	vs, err := daoUtils.UseTransaction(func(db *gorm.DB, serial uint, expired int64) (crl *CRL, err error) {
+		// 修改 CSR 状态
+		err = updateCRSStateByID(db, definition.CRSStateRevocation, csrID)
+		if err != nil {
+			return nil, err
+		}
 		// 修改证书状态
-		err = updateCRSStateByID(db, definition.CRSStateRevocation, serialNum)
+		err = updateCertificateStateByID(db, definition.CertificateStateRevocation, serial)
 		if err != nil {
 			return nil, err
 		}

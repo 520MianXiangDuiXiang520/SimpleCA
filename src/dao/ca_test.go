@@ -45,7 +45,7 @@ func TestHasCRSByID(t *testing.T) {
 }
 
 func TestCreateNewCRL(t *testing.T) {
-	crl, err := CreateNewCRL(uint(9), time.Now().Unix())
+	crl, err := CreateNewCRL(uint(1), uint(9), time.Now().Unix())
 	if err != nil {
 		t.Error()
 	}
