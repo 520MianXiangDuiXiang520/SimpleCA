@@ -74,5 +74,73 @@ func updateCRSByID(db *gorm.DB, crs *CARequest, id uint) (err error) {
 func updateCRSStateByID(db *gorm.DB, state, id uint) (err error) {
 	err = db.Model(&CARequest{}).Where("id = ?",
 		id).Updates(map[string]interface{}{"state": state}).Error
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to update csr state(%d) by id(%d)", state, id))
+		return err
+	}
 	return err
+}
+
+func selectCertificateByID(db *gorm.DB, id uint) (*Certificate, error) {
+	c := Certificate{}
+	err := db.Where("id = ?", id).First(&c).Error
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to select Certificate by id(%d)", id))
+		return nil, err
+	}
+	return &c, err
+}
+
+func GetCertificateByID(id uint) (Certificate, bool) {
+	db := daoUtils.GetDB()
+	c, err := selectCertificateByID(db, id)
+	if err != nil {
+		return Certificate{}, false
+	}
+	return *c, true
+}
+
+func insertNewCRL(db *gorm.DB, serial uint, expire int64) (*CRL, error) {
+	crl := CRL{
+		CertificateID: serial,
+		InputTime:     expire,
+	}
+	err := db.Create(&crl).Error
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to insert crl: %v", crl))
+		return nil, err
+	}
+	return &crl, nil
+}
+
+// 生成一条新的 CRL 信息
+func CreateNewCRL(serialNum uint, expired int64) (*CRL, error) {
+	vs, err := daoUtils.UseTransaction(func(db *gorm.DB, serial uint, expired int64) (crl *CRL, err error) {
+		// 修改证书状态
+		err = updateCRSStateByID(db, definition.CRSStateRevocation, serialNum)
+		if err != nil {
+			return nil, err
+		}
+		// 插入 crl 表
+		crl, err = insertNewCRL(db, serial, expired)
+		if err != nil {
+			return nil, err
+		}
+		return crl, nil
+	}, []interface{}{&gorm.DB{}, serialNum, expired})
+	if err != nil {
+		return nil, err
+	}
+	crlV := vs[0].Interface().(*CRL)
+	return crlV, nil
+}
+
+func GetAllCRL() ([]CRL, error) {
+	crlList := make([]CRL, 0)
+	err := daoUtils.GetDB().First(&crlList).Error
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to get all crls"))
+		return nil, err
+	}
+	return crlList, nil
 }

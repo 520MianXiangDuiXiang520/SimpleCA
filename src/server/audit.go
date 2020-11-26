@@ -117,7 +117,8 @@ func AuditPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 		Organization:       []string{csr.Organization},
 		OrganizationalUnit: []string{csr.OrganizationUnitName},
 		CommonName:         csr.CommonName,
-	}, csr.PublicKey, &rootPK, notBefore, notAfter, cerFileName)
+	}, csr.PublicKey, &rootPK, notBefore, notAfter,
+		[]string{src.GetSetting().CRLSetting.CRLDistributionPoint}, cerFileName)
 	if !ok {
 		resp.Header = ginTools.BaseRespHeader{
 			Code: http.StatusInternalServerError,

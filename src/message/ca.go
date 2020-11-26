@@ -37,3 +37,15 @@ type CaCsrReq struct {
 func (r *CaCsrReq) JSON(ctx *gin.Context) error {
 	return ctx.ShouldBindJSON(&r)
 }
+
+type CaCrlResp struct {
+	Header ginTools.BaseRespHeader `json:"header"`
+}
+
+type CaCrlReq struct {
+	SerialNumber uint `json:"serial_number" check:"not null"` // 序列号
+}
+
+func (r *CaCrlReq) JSON(ctx *gin.Context) error {
+	return ctx.ShouldBindJSON(&r)
+}

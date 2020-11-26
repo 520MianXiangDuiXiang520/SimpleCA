@@ -13,6 +13,7 @@ import (
 func CARegister(rg *gin.RouterGroup) {
 	rg.POST("/request", caRequestRoutes()...)
 	rg.POST("/csr", caCsrRoutes()...)
+	rg.POST("/crl", caCrlRoutes()...)
 
 }
 
@@ -29,5 +30,13 @@ func caCsrRoutes() []gin.HandlerFunc {
 		middlewareTools.Auth(middleware.TokenAuth),
 		ginTools.EasyHandler(check.CaCsrCheck,
 			server.CaCsrLogic, message.CaCsrReq{}),
+	}
+}
+
+func caCrlRoutes() []gin.HandlerFunc {
+	return []gin.HandlerFunc{
+		middlewareTools.Auth(middleware.TokenAuth),
+		ginTools.EasyHandler(check.CaCrlCheck,
+			server.CaCrlLogic, message.CaCrlReq{}),
 	}
 }

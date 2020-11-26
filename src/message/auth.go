@@ -24,7 +24,7 @@ type AuthRegisterResp struct {
 }
 
 type AuthRegisterReq struct {
-	Username string `json:"username" check:"len: [1, 16]; not null"`
+	Username string `json:"username" check:"len: [5, 16]; not null"`
 	Password string `json:"password" check:"len: [5, 18]; not null"`
 	Email    string `json:"email"    check:"email; not null"`
 }

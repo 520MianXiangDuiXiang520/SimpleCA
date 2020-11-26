@@ -1,9 +1,12 @@
 package server
 
 import (
+	"crypto/x509/pkix"
 	"encoding/base64"
 	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
 	"github.com/gin-gonic/gin"
+	"log"
+	"math/big"
 	"net/http"
 	"simple_ca/src"
 	"simple_ca/src/dao"
@@ -11,6 +14,7 @@ import (
 	"simple_ca/src/message"
 	"simple_ca/src/tools"
 	"strconv"
+	"time"
 )
 
 func CaRequestLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
@@ -112,4 +116,75 @@ func CaCsrLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespIn
 	resp.CSRID = base64ID
 	resp.Header = ginTools.SuccessRespHeader
 	return resp
+}
+
+func CaCrlLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
+	request := req.(*message.CaCrlReq)
+	resp := message.CaCrlResp{}
+	// 获取用户身份
+	user, ok := ctx.Get("user")
+	if !ok {
+		resp.Header = ginTools.UnauthorizedRespHeader
+		return resp
+	}
+	u := user.(*dao.User)
+
+	// 检查证书
+	cer, ok := dao.GetCertificateByID(request.SerialNumber)
+	if !ok {
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusBadRequest,
+			Msg:  "证书不存在",
+		}
+		return resp
+	}
+
+	if cer.UserID != u.ID {
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusForbidden,
+			Msg:  "拒绝服务！",
+		}
+		return resp
+	}
+
+	// crl 信息落库
+	cTime := time.Now().Unix()
+	_, err := dao.CreateNewCRL(request.SerialNumber, cTime)
+	if err != nil {
+		resp.Header = ginTools.SystemErrorRespHeader
+		return resp
+	}
+	// 更新 crl 文件
+	ok = updateCRLFile()
+	if !ok {
+		resp.Header = ginTools.SystemErrorRespHeader
+		return resp
+	}
+	log.Println(request)
+	resp.Header = ginTools.SuccessRespHeader
+	return resp
+}
+
+// 更新 CRL 文件
+func updateCRLFile() bool {
+	if time.Now().Unix() < src.GetNextUpdateCRLTime() {
+		return true
+	}
+	crlList, err := dao.GetAllCRL()
+	if err != nil {
+		return false
+	}
+	rcList := make([]pkix.RevokedCertificate, len(crlList))
+	for i, v := range crlList {
+		rcList[i] = pkix.RevokedCertificate{
+			SerialNumber:   big.NewInt(int64(v.CertificateID)),
+			RevocationTime: time.Unix(v.InputTime, 0),
+		}
+	}
+	rootCer, rootPK := src.GetCARootCer()
+	n := time.Now()
+	l := n.Add(time.Hour * 24)
+	ok := tools.CreateNewCRL(&rootCer, &rootPK, rcList, n, l, src.GetSetting().CRLSetting.CRLFileName)
+	src.SetNextUpdateCRLTime(n.Unix())
+	return ok
 }

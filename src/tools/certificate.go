@@ -39,7 +39,7 @@ func DecodePemCert(p string) (*x509.Certificate, bool) {
 }
 
 func CreateNewCertificate(rootCer *x509.Certificate, serialN *big.Int, subject pkix.Name,
-	publicKey string, pk *rsa.PrivateKey, notBefore, notAfter time.Time, p string) bool {
+	publicKey string, pk *rsa.PrivateKey, notBefore, notAfter time.Time, CRLDistributionPoint []string, p string) bool {
 	_, currently, _, _ := runtime.Caller(1)
 	filename := path.Join(path.Dir(currently), p)
 	template := &x509.Certificate{
@@ -52,8 +52,9 @@ func CreateNewCertificate(rootCer *x509.Certificate, serialN *big.Int, subject p
 		NotBefore:          notBefore,
 		NotAfter:           notAfter,
 		// PublicKey:          pk,
-		KeyUsage:    x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
-		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
+		CRLDistributionPoints: CRLDistributionPoint,
+		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
 	}
 	var c []byte
 	var err error
@@ -82,4 +83,43 @@ func CreateNewCertificate(rootCer *x509.Certificate, serialN *big.Int, subject p
 	}
 	certOut.Close()
 	return true
+}
+
+// 生成 CRL
+func CreateNewCRL(cer *x509.Certificate, pk *rsa.PrivateKey,
+	revokedCerts []pkix.RevokedCertificate, now, expiry time.Time, fileName string) bool {
+	crlBytes, err := cer.CreateCRL(rand.Reader, pk, revokedCerts, now, expiry)
+	if err != nil {
+		utils.ExceptionLog(err, "Fail to create CRL")
+		return false
+	}
+	certOut, err := os.Create(fileName)
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Failed to create %s", fileName))
+		return false
+	}
+	err = pem.Encode(certOut, &pem.Block{Type: "X509 CRL", Bytes: crlBytes})
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Failed to encode pem"))
+		return false
+	}
+	certOut.Close()
+	return true
+}
+
+// 从 CRL 文件读取上次更新时间
+func ParseCRLUpdateTime(filePath string) (int64, bool) {
+	_, currently, _, _ := runtime.Caller(1)
+	filename := path.Join(path.Dir(currently), filePath)
+	crlF, err := ioutil.ReadFile(filename)
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to read csr: %s", filename))
+		return 0, false
+	}
+	crl, err := x509.ParseCRL(crlF)
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to parse csr: %s", filename))
+		return 0, false
+	}
+	return crl.TBSCertList.ThisUpdate.Unix(), true
 }

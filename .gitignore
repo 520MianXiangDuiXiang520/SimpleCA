@@ -26,5 +26,6 @@ bin/*
 *.key
 *.cer
 *.class
+*.crl
 /codeSignTool/.idea/
 /codeSignTool/out/

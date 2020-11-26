@@ -15,6 +15,7 @@ import (
 	"simple_ca/src/definition"
 	"simple_ca/src/tools"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -41,16 +42,23 @@ type SMTPSetting struct {
 	Password string `json:"password"`
 }
 
+type CRLSetting struct {
+	CRLFileName          string `json:"crl_file_name"`          // CRL 文件名
+	CRLDistributionPoint string `json:"crl_distribution_point"` // CRL 分发点
+	CrlUpdateInterval    int    `json:"crl_update_interval"`    // CRL 信息更新间隔
+}
+
 type Setting struct {
 	Database    *settingTools.DBSetting `json:"database"`
 	AuthSetting *AuthSetting            `json:"auth_setting"`
 	Secret      *Secret                 `json:"secret"`
 	SMTPSetting *SMTPSetting            `json:"smtp_setting"`
 	SiteLink    string                  `json:"site_link"`
+	CRLSetting  *CRLSetting             `json:"crl_setting"`
 }
 
 var setting = &Setting{}
-var once, caOnce sync.Once
+var once, caOnce, crlOnce sync.Once
 
 func GetSetting() Setting {
 	once.Do(func() {
@@ -100,7 +108,8 @@ func loadCAKey() (rootRCer *x509.Certificate, rootRPK *rsa.PrivateKey) {
 	if !tools.HasThisFile(cerName) {
 		// 新建证书
 		if !tools.CreateNewCertificate(nil, big.NewInt(1), issuer,
-			"", r, time.Now(), time.Now().Add(time.Hour*24*365*10), cerName) {
+			"", r, time.Now(), time.Now().Add(time.Hour*24*365*10),
+			[]string{GetSetting().CRLSetting.CRLDistributionPoint}, cerName) {
 			panic("FailedToCreateRootCertificate")
 		}
 	}
@@ -117,4 +126,26 @@ func GetCARootCer() (x509.Certificate, rsa.PrivateKey) {
 		CARootCer, CARootPrivateKey = loadCAKey()
 	})
 	return *CARootCer, *CARootPrivateKey
+}
+
+var crlUpdateTimeNextTime int64
+
+// 获取下一次更新 CRL 的时间
+
+func GetNextUpdateCRLTime() int64 {
+	if atomic.LoadInt64(&crlUpdateTimeNextTime) == 0 {
+		crlOnce.Do(func() {
+			t, ok := tools.ParseCRLUpdateTime("../crl.crl")
+			if !ok {
+				atomic.StoreInt64(&crlUpdateTimeNextTime, time.Now().Unix())
+			} else {
+				atomic.StoreInt64(&crlUpdateTimeNextTime, t)
+			}
+		})
+	}
+	return atomic.LoadInt64(&crlUpdateTimeNextTime)
+}
+
+func SetNextUpdateCRLTime(n int64) {
+	atomic.StoreInt64(&crlUpdateTimeNextTime, n)
 }

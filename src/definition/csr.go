@@ -9,6 +9,8 @@ const (
 	CRSStatePass
 	// 审核未通过
 	CRSStateUnPass
+	// 证书被撤销
+	CRSStateRevocation
 )
 
 // CSR 文件内容
