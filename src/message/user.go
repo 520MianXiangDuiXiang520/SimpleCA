@@ -3,10 +3,12 @@ package message
 import (
 	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
 	"github.com/gin-gonic/gin"
+	"simple_ca/src/definition"
 )
 
 type UserCerResp struct {
-	Header ginTools.BaseRespHeader `json:"header"`
+	Header       ginTools.BaseRespHeader                  `json:"header"`
+	Certificates []definition.CertificateFullAmountFields `json:"certificates"`
 }
 
 type UserCerReq struct {

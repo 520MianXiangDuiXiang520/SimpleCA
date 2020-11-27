@@ -33,6 +33,7 @@ type Secret struct {
 	CARootCerName            string                                `json:"ca_root_cer_name"`
 	CAIssuerInfo             *definition.CertificateSigningRequest `json:"ca_issuer_info"`
 	CertificateEffectiveTime int64                                 `json:"certificate_effective_time"` // 证书有效时长，单位天
+	DownloadLink             string                                `json:"download_link"`              // 证书下载路径
 }
 
 // SMTP 连接相关配置
