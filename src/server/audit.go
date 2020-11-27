@@ -106,9 +106,9 @@ func AuditPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 		RequestID:  csr.ID,
 	})
 	// 生成证书
-	cerFileName := fmt.Sprintf("%s/%d_%v_%v.cer",
-		src.GetSetting().Secret.UserCerPath, user.ID,
-		user.Username, time.Now().Nanosecond())
+	cName := tools.GetCertificateFileName(c.ID, user.ID, user.Username)
+	cerFileName := fmt.Sprintf("%s/%s",
+		src.GetSetting().Secret.UserCerPath, cName)
 	// 获取 CA 根证书和私钥
 	rootCer, rootPK := src.GetCARootCer()
 	// 根据 CA 根证书和私钥为用户签发证书

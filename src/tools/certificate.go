@@ -121,3 +121,11 @@ func ParseCRLUpdateTime(filePath string) (int64, bool) {
 	}
 	return crl.TBSCertList.ThisUpdate.Unix(), true
 }
+
+func GetCertificateFileName(serial, userID uint, userName string) string {
+	return HashByMD5([]string{
+		fmt.Sprintf("%d, %s", serial, userName),
+		fmt.Sprintf("%d, %s", userID, userName),
+		fmt.Sprintf("%d. %d. %s", userID, serial, userName),
+	}) + ".cer"
+}
