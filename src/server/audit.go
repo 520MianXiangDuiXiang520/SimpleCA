@@ -158,7 +158,8 @@ func AuditPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 func AuditUnPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
 	request := req.(*message.AuditUnPassReq)
 	resp := message.AuditUnPassResp{}
-	csr, ok := checkCSRID(request.CSRID)
+	// csr, ok := checkCSRID(request.CSRID)
+	csr, ok := dao.GetCRSByID(request.CSRID)
 	if !ok {
 		resp.Header = ginTools.ParamErrorRespHeader
 		return resp

@@ -41,7 +41,7 @@ type AuditUnPassResp struct {
 }
 
 type AuditUnPassReq struct {
-	CSRID string `json:"csr_id"` // CSR ID 3DES 加密后 Base64 编码
+	CSRID uint `json:"csr_id"` // CSR ID 3DES 加密后 Base64 编码
 }
 
 func (r *AuditUnPassReq) JSON(ctx *gin.Context) error {
