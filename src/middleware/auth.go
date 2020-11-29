@@ -8,8 +8,7 @@ import (
 
 func TokenAuth(context *gin.Context) (middleware.UserBase, bool) {
 	token, err := context.Cookie("SESSIONID")
-	flag := err != nil
-	if !flag {
+	if err != nil {
 		token = context.GetHeader("Token")
 	}
 	if len(token) != 32 {
