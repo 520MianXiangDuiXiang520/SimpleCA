@@ -137,7 +137,7 @@ var crlUpdateTimeNextTime int64
 func GetNextUpdateCRLTime() int64 {
 	if atomic.LoadInt64(&crlUpdateTimeNextTime) == 0 {
 		crlOnce.Do(func() {
-			t, ok := tools.ParseCRLUpdateTime("../crl.crl")
+			t, ok := tools.ParseCRLUpdateTime(GetSetting().CRLSetting.CRLFileName)
 			if !ok {
 				atomic.StoreInt64(&crlUpdateTimeNextTime, time.Now().Unix())
 			} else {

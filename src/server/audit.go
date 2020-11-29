@@ -68,8 +68,9 @@ func checkCSRID(CSRID string) (*dao.CARequest, bool) {
 func AuditPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
 	request := req.(*message.AuditPassReq)
 	resp := message.AuditPassResp{}
-	// 管理员身份验证
-	csr, ok := checkCSRID(request.CSRID)
+	// 删除解密步骤(2020/11/29)
+	// csr, ok := checkCSRID(request.CSRID)
+	csr, ok := dao.GetCRSByID(request.CSRID)
 	if !ok {
 		resp.Header = ginTools.ParamErrorRespHeader
 		return resp

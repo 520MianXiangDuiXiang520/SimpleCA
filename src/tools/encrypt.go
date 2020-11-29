@@ -113,7 +113,7 @@ func PKCSPadding(origData []byte, blockSize int) []byte {
 // 解码 RSA 公钥 pem 文件
 func DecodeRSAPublicKey(input []byte) (interface{}, bool) {
 	block, _ := pem.Decode(input)
-	if block == nil || block.Type != "PUBLIC KEY" {
+	if block == nil || (block.Type != "PUBLIC KEY" && block.Type != "RSA PUBLIC KEY") {
 		utils.ExceptionLog(errors.New("DecodeRSAPublicKeyFail"),
 			"failed to decode PEM block containing public key")
 		return nil, false

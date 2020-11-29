@@ -15,6 +15,10 @@ github.com/520MianXiangDuiXiang520/GinTools v0.0.0-20201124124451-2b99ae9f8649 h
 github.com/520MianXiangDuiXiang520/GinTools v0.0.0-20201124124451-2b99ae9f8649/go.mod h1:CYFnK7fUokxk2fosC/zg0mp0LeijKtf4KvpQ+7o9q7U=
 github.com/520MianXiangDuiXiang520/GinTools v0.0.0-20201126123210-b8cf30b6da97 h1:0iLKdWSJwmBP45/5eidmWFWFDGzxxFjniZ77cKyybeE=
 github.com/520MianXiangDuiXiang520/GinTools v0.0.0-20201126123210-b8cf30b6da97/go.mod h1:CYFnK7fUokxk2fosC/zg0mp0LeijKtf4KvpQ+7o9q7U=
+github.com/520MianXiangDuiXiang520/GinTools v0.0.0-20201127144818-938bdff8b898 h1:miwk6XsK8jxb/d6hvPrNgeno07tjJ2q2FuRavvQKfB0=
+github.com/520MianXiangDuiXiang520/GinTools v0.0.0-20201127144818-938bdff8b898/go.mod h1:CYFnK7fUokxk2fosC/zg0mp0LeijKtf4KvpQ+7o9q7U=
+github.com/520MianXiangDuiXiang520/GinTools v0.0.0-20201128075037-e2572217f365 h1:bWV99HGxTCeDCuWqhY552puQq01B+Oiy0ZpIvSxAvzs=
+github.com/520MianXiangDuiXiang520/GinTools v0.0.0-20201128075037-e2572217f365/go.mod h1:CYFnK7fUokxk2fosC/zg0mp0LeijKtf4KvpQ+7o9q7U=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/PuerkitoBio/goquery v1.5.1/go.mod h1:GsLWisAFVj4WgDibEWF4pvYnkVQBpKBKeU+7zCJoLcc=
 github.com/andybalholm/cascadia v1.1.0/go.mod h1:GsXiBklL0woXo1j/WYWtSYYC4ouU9PqHO0sqidkEA4Y=

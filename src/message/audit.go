@@ -29,7 +29,7 @@ type AuditPassResp struct {
 }
 
 type AuditPassReq struct {
-	CSRID string `json:"csr_id"` // CSR ID 3DES 加密后 Base64 编码
+	CSRID uint `json:"csr_id"` // CSR ID, 接口属于管理员，无需加密
 }
 
 func (r *AuditPassReq) JSON(ctx *gin.Context) error {

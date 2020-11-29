@@ -17,7 +17,10 @@ func checkPublicKey(str string) bool {
 func CaRequestCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespInter, error) {
 	r := req.(*message.CaCodeSignatureRequestReq)
 	if !checkPublicKey(r.PublicKey) {
-		return ginTools.ParamErrorRespHeader, errors.New("")
+		resp := message.CaCsrResp{
+			Header: ginTools.ParamErrorRespHeader,
+		}
+		return resp, errors.New("")
 	}
 	return http.StatusOK, nil
 }
