@@ -49,3 +49,15 @@ type CaCrlReq struct {
 func (r *CaCrlReq) JSON(ctx *gin.Context) error {
 	return ctx.ShouldBindJSON(&r)
 }
+
+type CaFileResp struct {
+	Header ginTools.BaseRespHeader `json:"header"`
+	definition.CertificateSigningRequest
+}
+
+type CaFileReq struct {
+}
+
+func (r *CaFileReq) JSON(ctx *gin.Context) error {
+	return ctx.ShouldBindJSON(&r)
+}

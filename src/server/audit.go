@@ -194,7 +194,7 @@ func AuditUnPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.Base
 		ToList: []email_tools.EmailUser{
 			{Address: user.Email, Name: user.Username},
 		},
-		Subject: "证书申请通过通知",
+		Subject: "证书申请驳回通知",
 		Body:    emailTemp,
 	})
 	if err != nil {

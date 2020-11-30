@@ -1,10 +1,15 @@
 package server
 
 import (
+	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/base64"
+	"encoding/pem"
+	"fmt"
 	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
+	utils "github.com/520MianXiangDuiXiang520/GinTools/log_tools"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
 	"math/big"
 	"net/http"
 	"simple_ca/src"
@@ -185,4 +190,72 @@ func updateCRLFile() bool {
 	ok := tools.CreateNewCRL(&rootCer, &rootPK, rcList, n, l, src.GetSetting().CRLSetting.CRLFileName)
 	src.SetNextUpdateCRLTime(n.Unix())
 	return ok
+}
+
+func CaFileLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
+	// request := req.(*message.CaFileReq)
+	resp := message.CaFileResp{}
+	fileHeader, err := ctx.FormFile(src.GetSetting().CSRFileKey)
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to read %s", src.GetSetting().CSRFileKey))
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusBadRequest,
+			Msg:  "请选择要上传的文件",
+		}
+		return resp
+	}
+	if fileHeader.Size <= 0 {
+		utils.ExceptionLog(err, fmt.Sprintf("The size of %s is %d", fileHeader.Filename, fileHeader.Size))
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusBadRequest,
+			Msg:  "空文件",
+		}
+		return resp
+	}
+	file, err := fileHeader.Open()
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to open %s", fileHeader.Filename))
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusInternalServerError,
+			Msg:  "无法打开文件",
+		}
+		return resp
+	}
+	fileBytes, _ := ioutil.ReadAll(file)
+	block, rest := pem.Decode(fileBytes)
+
+	if block == nil || len(rest) > 0 {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to parse %s", fileHeader.Filename))
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusBadRequest,
+			Msg:  "无法解析文件",
+		}
+		return resp
+	}
+	csr, err := x509.ParseCertificateRequest(block.Bytes)
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to parse %s", fileHeader.Filename))
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusBadRequest,
+			Msg:  "无法解析文件",
+		}
+		return resp
+	}
+	resp.Country = getFirstBySplit(csr.Subject.Country)
+	resp.Province = getFirstBySplit(csr.Subject.Province)
+	resp.Locality = getFirstBySplit(csr.Subject.Locality)
+	resp.Organization = getFirstBySplit(csr.Subject.Organization)
+	resp.OrganizationalUnit = getFirstBySplit(csr.Subject.OrganizationalUnit)
+	resp.CommonName = csr.Subject.CommonName
+	resp.EmailAddress = getFirstBySplit(csr.EmailAddresses)
+
+	resp.Header = ginTools.SuccessRespHeader
+	return resp
+}
+
+func getFirstBySplit(s []string) string {
+	if len(s) > 0 {
+		return s[0]
+	}
+	return ""
 }

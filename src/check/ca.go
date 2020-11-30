@@ -32,3 +32,9 @@ func CaCsrCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespI
 func CaCrlCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespInter, error) {
 	return http.StatusOK, nil
 }
+
+func CaFileCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespInter, error) {
+	// request := req.(*message.CaFileReq)
+
+	return http.StatusOK, nil
+}

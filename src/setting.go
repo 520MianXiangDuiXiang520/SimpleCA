@@ -57,6 +57,7 @@ type Setting struct {
 	SMTPSetting *SMTPSetting            `json:"smtp_setting"`
 	SiteLink    string                  `json:"site_link"`
 	CRLSetting  *CRLSetting             `json:"crl_setting"`
+	CSRFileKey  string                  `json:"csr_file_key"`
 }
 
 var setting = &Setting{}

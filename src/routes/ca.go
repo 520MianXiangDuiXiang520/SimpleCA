@@ -4,6 +4,7 @@ import (
 	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
 	middlewareTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools/middleware"
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"simple_ca/src/check"
 	"simple_ca/src/message"
 	"simple_ca/src/middleware"
@@ -14,6 +15,7 @@ func CARegister(rg *gin.RouterGroup) {
 	rg.POST("/request", caRequestRoutes()...)
 	rg.POST("/csr", caCsrRoutes()...)
 	rg.POST("/crl", caCrlRoutes()...)
+	rg.POST("/file", caFileRoutes()...)
 
 }
 
@@ -38,5 +40,15 @@ func caCrlRoutes() []gin.HandlerFunc {
 		middlewareTools.Auth(middleware.TokenAuth),
 		ginTools.EasyHandler(check.CaCrlCheck,
 			server.CaCrlLogic, message.CaCrlReq{}),
+	}
+}
+
+func caFileRoutes() []gin.HandlerFunc {
+	return []gin.HandlerFunc{
+		func(context *gin.Context) {
+			resp := server.CaFileLogic(context, &message.CaFileReq{})
+			context.Set("resp", resp)
+			context.JSON(http.StatusOK, resp)
+		},
 	}
 }
