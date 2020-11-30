@@ -248,7 +248,18 @@ func CaFileLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespI
 	resp.OrganizationalUnit = getFirstBySplit(csr.Subject.OrganizationalUnit)
 	resp.CommonName = csr.Subject.CommonName
 	resp.EmailAddress = getFirstBySplit(csr.EmailAddresses)
-
+	// 从 CSR 文件中获取公钥
+	bytes, err := x509.MarshalPKIXPublicKey(csr.PublicKey)
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to Marshal pk"))
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusBadRequest,
+			Msg:  "无法解析公钥",
+		}
+		return resp
+	}
+	pk := pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: bytes})
+	resp.PublicKey = string(pk)
 	resp.Header = ginTools.SuccessRespHeader
 	return resp
 }

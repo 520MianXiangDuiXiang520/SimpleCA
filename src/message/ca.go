@@ -53,6 +53,7 @@ func (r *CaCrlReq) JSON(ctx *gin.Context) error {
 type CaFileResp struct {
 	Header ginTools.BaseRespHeader `json:"header"`
 	definition.CertificateSigningRequest
+	PublicKey string `json:"public_key"`
 }
 
 type CaFileReq struct {
