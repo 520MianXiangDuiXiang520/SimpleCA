@@ -14,8 +14,8 @@ func checkPublicKey(str string) bool {
 	return ok
 }
 
-func CaRequestCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespInter, error) {
-	r := req.(*message.CaCodeSignatureRequestReq)
+func CaUploadPKCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespInter, error) {
+	r := req.(*message.CaUploadPKReq)
 	if !checkPublicKey(r.PublicKey) {
 		resp := message.CaCsrResp{
 			Header: ginTools.ParamErrorRespHeader,
@@ -25,16 +25,23 @@ func CaRequestCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseR
 	return http.StatusOK, nil
 }
 
-func CaCsrCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespInter, error) {
+func CaCodeSignCsrCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespInter, error) {
 	return http.StatusOK, nil
 }
 
-func CaCrlCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespInter, error) {
+func CaRevokeCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespInter, error) {
 	return http.StatusOK, nil
 }
 
 func CaFileCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespInter, error) {
-	// request := req.(*message.CaFileReq)
+	// request := req.(*message.CaCSRFileReq)
 
+	return http.StatusOK, nil
+}
+
+func CaUpdateCrlCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespInter, error) {
+	return http.StatusOK, nil
+}
+func CaSslCsrCheck(ctx *gin.Context, req ginTools.BaseReqInter) (ginTools.BaseRespInter, error) {
 	return http.StatusOK, nil
 }

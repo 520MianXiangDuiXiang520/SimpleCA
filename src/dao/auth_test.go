@@ -4,6 +4,7 @@ import (
 	"fmt"
 	daoUtils "github.com/520MianXiangDuiXiang520/GinTools/gin_tools/dao_tools"
 	"simple_ca/src"
+	"simple_ca/src/definition"
 	"testing"
 	"time"
 )
@@ -35,4 +36,12 @@ func TestHasUserByID(t *testing.T) {
 func TestGetUserByName(t *testing.T) {
 	u, ok := GetUserByName("ggdjs")
 	fmt.Println(u, ok)
+}
+
+func TestGetUserAndExtensionTime(t *testing.T) {
+	u, e := GetUserAndExtensionTime("848ae7a63594b5f7cdd00d8ccad30e75", definition.OneHour/2)
+	if !e {
+		t.Error()
+	}
+	fmt.Println(u)
 }

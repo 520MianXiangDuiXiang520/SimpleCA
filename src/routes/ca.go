@@ -12,43 +12,72 @@ import (
 )
 
 func CARegister(rg *gin.RouterGroup) {
-	rg.POST("/request", caRequestRoutes()...)
-	rg.POST("/csr", caCsrRoutes()...)
-	rg.POST("/crl", caCrlRoutes()...)
-	rg.POST("/file", caFileRoutes()...)
+	// 提交代码签名 CSR 信息
+	rg.POST("/code_sign_csr", caCodeSignCsrRoutes()...)
+	rg.POST("/ssl_csr", caSslCsrRoutes()...)
+
+	// 单独提交公钥
+	rg.POST("/upload_pk", caUploadPKRoutes()...)
+
+	// 注销证书
+	rg.POST("/revoke", caRevokeRoutes()...)
+
+	// 上传 CSR 文件
+	rg.POST("/csr_file", caCSRFileRoutes()...)
+
+	// 手动更新 CRL 文件
+	rg.POST("/update_crl", caUpdateCrlRoutes()...)
 
 }
 
-func caRequestRoutes() []gin.HandlerFunc {
+func caUploadPKRoutes() []gin.HandlerFunc {
 	return []gin.HandlerFunc{
 		middlewareTools.Auth(middleware.TokenAuth),
-		ginTools.EasyHandler(check.CaRequestCheck,
-			server.CaRequestLogic, message.CaCodeSignatureRequestReq{}),
+		ginTools.EasyHandler(check.CaUploadPKCheck,
+			server.CaUploadPKLogic, message.CaUploadPKReq{}),
 	}
 }
 
-func caCsrRoutes() []gin.HandlerFunc {
+func caCodeSignCsrRoutes() []gin.HandlerFunc {
 	return []gin.HandlerFunc{
 		middlewareTools.Auth(middleware.TokenAuth),
-		ginTools.EasyHandler(check.CaCsrCheck,
-			server.CaCsrLogic, message.CaCsrReq{}),
+		ginTools.EasyHandler(check.CaCodeSignCsrCheck,
+			server.CaCodeSignCsrLogic, message.CaCodeSignCsrReq{}),
 	}
 }
 
-func caCrlRoutes() []gin.HandlerFunc {
+func caRevokeRoutes() []gin.HandlerFunc {
 	return []gin.HandlerFunc{
 		middlewareTools.Auth(middleware.TokenAuth),
-		ginTools.EasyHandler(check.CaCrlCheck,
-			server.CaCrlLogic, message.CaCrlReq{}),
+		ginTools.EasyHandler(check.CaRevokeCheck,
+			server.CaRevokeLogic, message.CaRevokeReq{}),
 	}
 }
 
-func caFileRoutes() []gin.HandlerFunc {
+func caCSRFileRoutes() []gin.HandlerFunc {
 	return []gin.HandlerFunc{
+		middlewareTools.Auth(middleware.TokenAuth),
 		func(context *gin.Context) {
-			resp := server.CaFileLogic(context, &message.CaFileReq{})
+			resp := server.CaCSRFileLogic(context, &message.CaCSRFileReq{})
 			context.Set("resp", resp)
 			context.JSON(http.StatusOK, resp)
 		},
+	}
+}
+
+func caUpdateCrlRoutes() []gin.HandlerFunc {
+	return []gin.HandlerFunc{
+		middlewareTools.Auth(middleware.TokenAuth),
+		middlewareTools.Permiter(middleware.AdminPermit),
+		ginTools.EasyHandler(check.CaUpdateCrlCheck,
+			server.CaUpdateCrlLogic, message.CaUpdateCrlReq{}),
+	}
+}
+
+func caSslCsrRoutes() []gin.HandlerFunc {
+	return []gin.HandlerFunc{
+		middlewareTools.Auth(middleware.TokenAuth),
+		ginTools.EasyHandler(check.CaSslCsrCheck,
+			server.CaSslCsrLogic, message.CaSslCsrReq{}),
 	}
 }

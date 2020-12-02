@@ -9,6 +9,7 @@ import (
 type CRSPublicKey struct {
 	ID        uint   `json:"id"`
 	PublicKey string `json:"public_key"`
+	TypeStr   string `json:"type_str"`
 	definition.CertificateSigningRequest
 }
 

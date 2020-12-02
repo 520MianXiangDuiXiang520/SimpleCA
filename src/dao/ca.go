@@ -152,7 +152,7 @@ func CreateNewCRL(csrID, serialNum uint, expired int64) (*CRL, error) {
 
 func GetAllCRL() ([]CRL, error) {
 	crlList := make([]CRL, 0)
-	err := daoUtils.GetDB().First(&crlList).Error
+	err := daoUtils.GetDB().Find(&crlList).Error
 	if err != nil {
 		utils.ExceptionLog(err, fmt.Sprintf("Fail to get all crls"))
 		return nil, err

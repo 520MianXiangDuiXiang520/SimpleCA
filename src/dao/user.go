@@ -43,6 +43,8 @@ func GetCertificateFullAmountFieldsUser(user *User) ([]definition.CertificateFul
 			CRLDistributionPoints: src.GetSetting().CRLSetting.CRLDistributionPoint,
 			PublicKey:             csr.PublicKey,
 			DownloadLink:          src.GetSetting().Secret.DownloadLink + cName,
+			Type:                  csr.Type,
+			DNSName:               csr.DnsNames,
 		}
 	}
 	return result, true

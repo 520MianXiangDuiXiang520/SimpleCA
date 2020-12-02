@@ -8,7 +8,6 @@ import (
 	settingTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools/setting_tools"
 	utils "github.com/520MianXiangDuiXiang520/GinTools/log_tools"
 	"io/ioutil"
-	"math/big"
 	"os"
 	"path"
 	"runtime"
@@ -44,20 +43,27 @@ type SMTPSetting struct {
 	Password string `json:"password"`
 }
 
+// CRL 相关配置
 type CRLSetting struct {
 	CRLFileName          string `json:"crl_file_name"`          // CRL 文件名
 	CRLDistributionPoint string `json:"crl_distribution_point"` // CRL 分发点
 	CrlUpdateInterval    int    `json:"crl_update_interval"`    // CRL 信息更新间隔
 }
 
+// 授权访问信息相关配置
+type AuthorityInfoAccess struct {
+	IssuingCertificateURL string `json:"issuing_certificate_url"` // 颁发者根证书路径
+}
+
 type Setting struct {
-	Database    *settingTools.DBSetting `json:"database"`
-	AuthSetting *AuthSetting            `json:"auth_setting"`
-	Secret      *Secret                 `json:"secret"`
-	SMTPSetting *SMTPSetting            `json:"smtp_setting"`
-	SiteLink    string                  `json:"site_link"`
-	CRLSetting  *CRLSetting             `json:"crl_setting"`
-	CSRFileKey  string                  `json:"csr_file_key"`
+	Database            *settingTools.DBSetting `json:"database"`
+	AuthSetting         *AuthSetting            `json:"auth_setting"`
+	Secret              *Secret                 `json:"secret"`
+	SMTPSetting         *SMTPSetting            `json:"smtp_setting"`
+	SiteLink            string                  `json:"site_link"`
+	CRLSetting          *CRLSetting             `json:"crl_setting"`
+	CSRFileKey          string                  `json:"csr_file_key"`
+	AuthorityInfoAccess *AuthorityInfoAccess    `json:"authority_info_access"`
 }
 
 var setting = &Setting{}
@@ -110,9 +116,8 @@ func loadCAKey() (rootRCer *x509.Certificate, rootRPK *rsa.PrivateKey) {
 	cerName := GetSetting().Secret.CARootCerName
 	if !tools.HasThisFile(cerName) {
 		// 新建证书
-		if !tools.CreateNewCertificate(nil, big.NewInt(1), issuer,
-			"", r, time.Now(), time.Now().Add(time.Hour*24*365*10),
-			[]string{GetSetting().CRLSetting.CRLDistributionPoint}, cerName) {
+		if !tools.CreateIssuerRootCer(issuer,
+			time.Now(), time.Now().Add(time.Hour*24*365*10), r, cerName) {
 			panic("FailedToCreateRootCertificate")
 		}
 	}

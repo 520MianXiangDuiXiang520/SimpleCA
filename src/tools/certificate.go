@@ -38,24 +38,12 @@ func DecodePemCert(p string) (*x509.Certificate, bool) {
 	return certBody, true
 }
 
-func CreateNewCertificate(rootCer *x509.Certificate, serialN *big.Int, subject pkix.Name,
-	publicKey string, pk *rsa.PrivateKey, notBefore, notAfter time.Time, CRLDistributionPoint []string, p string) bool {
-	template := &x509.Certificate{
-		Version:            1,
-		SerialNumber:       serialN,
-		Subject:            subject,
-		Issuer:             subject,
-		SignatureAlgorithm: x509.SHA256WithRSA,
-		PublicKeyAlgorithm: x509.RSA,
-		NotBefore:          notBefore,
-		NotAfter:           notAfter,
-		// PublicKey:          pk,
-		CRLDistributionPoints: CRLDistributionPoint,
-		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
-		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
-	}
+func createNewCertificate(rootCer, template *x509.Certificate,
+	publicKey string, pk *rsa.PrivateKey, p string) bool {
+
 	var c []byte
 	var err error
+	// 生成根证书
 	if rootCer == nil {
 		c, err = x509.CreateCertificate(rand.Reader, template, template, &pk.PublicKey, pk)
 	} else {
@@ -81,6 +69,68 @@ func CreateNewCertificate(rootCer *x509.Certificate, serialN *big.Int, subject p
 	}
 	certOut.Close()
 	return true
+}
+
+// 生成颁发者根证书
+func CreateIssuerRootCer(issuer pkix.Name, notBefore,
+	notAfter time.Time, pk *rsa.PrivateKey, p string) bool {
+	template := &x509.Certificate{
+		Version:            1,
+		SerialNumber:       big.NewInt(1),
+		Subject:            issuer,
+		Issuer:             issuer,
+		SignatureAlgorithm: x509.SHA256WithRSA,
+		PublicKeyAlgorithm: x509.RSA,
+		NotBefore:          notBefore,
+		NotAfter:           notAfter,
+		IsCA:               true,
+		// IssuingCertificateURL:
+		KeyUsage: x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign |
+			x509.KeyUsageCRLSign | x509.KeyUsageKeyEncipherment,
+		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
+	}
+	return createNewCertificate(nil, template, "", pk, p)
+}
+
+// 生成代码签名证书
+func CreateCodeSignCert(rootCer *x509.Certificate, serialN *big.Int, subject pkix.Name,
+	publicKey string, pk *rsa.PrivateKey, notBefore, notAfter time.Time,
+	CRLDistributionPoint []string, p string) bool {
+	template := &x509.Certificate{
+		Version:               1,
+		SerialNumber:          serialN,
+		Subject:               subject,
+		Issuer:                subject,
+		SignatureAlgorithm:    x509.SHA256WithRSA,
+		PublicKeyAlgorithm:    x509.RSA,
+		NotBefore:             notBefore,
+		NotAfter:              notAfter,
+		CRLDistributionPoints: CRLDistributionPoint,
+		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageCodeSigning},
+	}
+	return createNewCertificate(rootCer, template, publicKey, pk, p)
+}
+
+// 生成 SSL 证书
+func CreateSSLCert(rootCer *x509.Certificate, serialN *big.Int, subject pkix.Name,
+	publicKey string, pk *rsa.PrivateKey, notBefore, notAfter time.Time,
+	CRLDistributionPoint []string, DNSNames []string, p string) bool {
+	template := &x509.Certificate{
+		Version:               1,
+		SerialNumber:          serialN,
+		Subject:               subject,
+		Issuer:                subject,
+		SignatureAlgorithm:    x509.SHA256WithRSA,
+		PublicKeyAlgorithm:    x509.RSA,
+		NotBefore:             notBefore,
+		NotAfter:              notAfter,
+		CRLDistributionPoints: CRLDistributionPoint,
+		DNSNames:              DNSNames,
+		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
+	}
+	return createNewCertificate(rootCer, template, publicKey, pk, p)
 }
 
 // 生成 CRL

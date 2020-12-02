@@ -21,7 +21,7 @@ func HasUserByUP(username, password string) (*User, bool) {
 }
 
 func HasUserByID(id uint) (user *User, ok bool) {
-	user, err := selectUserByID(id)
+	user, err := selectUserByID(daoUtils.GetDB(), id)
 	if err != nil {
 		msg := fmt.Sprintf("Fail to select user by id: %d", id)
 		utils.ExceptionLog(err, msg)
@@ -38,9 +38,9 @@ func selectUserByUNamePSD(uName, pwd string) (u User, err error) {
 	return
 }
 
-func selectUserByID(id uint) (u *User, err error) {
+func selectUserByID(db *gorm.DB, id uint) (u *User, err error) {
 	u = &User{}
-	err = daoUtils.GetDB().Where("id = ?", id).First(u).Error
+	err = db.Where("id = ?", id).First(u).Error
 	return u, err
 }
 
@@ -96,22 +96,22 @@ func InsertUser(user *User) (ok bool) {
 	return true
 }
 
-func selectUserIDByToken(token string) (uid uint, err error) {
-	ut := &UserToken{}
-	err = daoUtils.GetDB().Where("token = ? AND expire_time > ?",
+func selectUserTokenByToken(db *gorm.DB, token string) (ut *UserToken, err error) {
+	ut = &UserToken{}
+	err = db.Where("token = ? AND expire_time > ?",
 		token, time.Now().Unix()).First(ut).Error
-	uid = ut.UserID
-	return uid, err
+	return ut, err
 }
 
 func GetUserByToken(token string) (user *User, ok bool) {
-	id, err := selectUserIDByToken(token)
+	ut, err := selectUserTokenByToken(daoUtils.GetDB(), token)
 	if err != nil {
 		msg := fmt.Sprintf("Fail to select userID by token, token: %s", token)
 		utils.ExceptionLog(err, msg)
 		return nil, false
 	}
-	user, err = selectUserByID(id)
+	id := ut.UserID
+	user, err = selectUserByID(daoUtils.GetDB(), id)
 	if err != nil {
 		msg := fmt.Sprintf("Fail to select user by id, id: %d", id)
 		utils.ExceptionLog(err, msg)
@@ -128,5 +128,42 @@ func GetUserByName(name string) (*User, bool) {
 		return nil, false
 	}
 	return &u, true
+}
 
+func updateUserToken(db *gorm.DB, ut *UserToken) error {
+	err := db.Model(&UserToken{}).Where("id = ?", ut.ID).Update(ut).Error
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to update userToken: %v", ut))
+		return err
+	}
+	return nil
+}
+
+// 根据 Token 获取用户并延长过期时间
+func GetUserAndExtensionTime(token string, extentTime int64) (*User, bool) {
+	txFunc := func(db *gorm.DB, token string, extentTime int64) (*User, error) {
+		ut, err := selectUserTokenByToken(db, token)
+		if err != nil {
+			return nil, err
+		}
+
+		ut.ExpireTime += extentTime
+		err = updateUserToken(db, ut)
+		if err != nil {
+			return nil, err
+		}
+
+		user, err := selectUserByID(db, ut.UserID)
+		if err != nil {
+			return nil, err
+		}
+		return user, nil
+	}
+	v, err := daoUtils.UseTransaction(txFunc, []interface{}{daoUtils.GetDB(), token, extentTime})
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to do 'getUserAndExtensionTime'"))
+		return nil, false
+	}
+	user := v[0].Interface().(*User)
+	return user, true
 }

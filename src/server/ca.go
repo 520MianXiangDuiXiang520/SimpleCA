@@ -21,9 +21,10 @@ import (
 	"time"
 )
 
-func CaRequestLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
-	request := req.(*message.CaCodeSignatureRequestReq)
+func CaUploadPKLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
+	request := req.(*message.CaUploadPKReq)
 	resp := message.CaRequestResp{}
+	// 获取用户
 	user, ok := ctx.Get("user")
 	if !ok {
 		resp.Header = ginTools.UnauthorizedRespHeader
@@ -75,17 +76,19 @@ func CaRequestLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 		return resp
 	}
 
+	// 把公钥插入对应行
 	_, ok = dao.AddPublicKeyForRequest(csr, request.PublicKey, u.ID)
 	if !ok {
 		resp.Header = ginTools.SystemErrorRespHeader
 		return resp
 	}
+
 	resp.Header = ginTools.SuccessRespHeader
 	return resp
 }
 
-func CaCsrLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
-	request := req.(*message.CaCsrReq)
+func CaCodeSignCsrLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
+	request := req.(*message.CaCodeSignCsrReq)
 	resp := message.CaCsrResp{}
 	user, ok := ctx.Get("user")
 	if !ok {
@@ -105,26 +108,30 @@ func CaCsrLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespIn
 		OrganizationUnitName: request.OrganizationalUnit,
 		CommonName:           request.CommonName,
 		EmailAddress:         request.EmailAddress,
+		Type:                 definition.CertificateTypeCodeSign,
 	}
 	newCSR, ok = dao.CreateNewCRS(newCSR)
 	if !ok {
 		resp.Header = ginTools.SystemErrorRespHeader
 		return resp
 	}
+
+	// DES 加密返回的 ID
 	encryptID, ok := tools.EncryptWithDES(strconv.Itoa(int(newCSR.ID)), src.GetSetting().Secret.ResponseSecret)
 	if !ok {
 		resp.Header = ginTools.SystemErrorRespHeader
 		return resp
 	}
 	base64ID := base64.StdEncoding.EncodeToString(encryptID)
+
 	resp.CSRID = base64ID
 	resp.Header = ginTools.SuccessRespHeader
 	return resp
 }
 
-func CaCrlLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
-	request := req.(*message.CaCrlReq)
-	resp := message.CaCrlResp{}
+func CaRevokeLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
+	request := req.(*message.CaRevokeReq)
+	resp := message.CaRevokeResp{}
 	// 获取用户身份
 	user, ok := ctx.Get("user")
 	if !ok {
@@ -173,6 +180,104 @@ func updateCRLFile() bool {
 	if time.Now().Unix() < src.GetNextUpdateCRLTime() {
 		return true
 	}
+	return UpdateCRL()
+}
+
+func CaCSRFileLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
+	// request := req.(*message.CaCSRFileReq)
+	resp := message.CaCSRFileResp{}
+	fileHeader, err := ctx.FormFile(src.GetSetting().CSRFileKey)
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to read %s", src.GetSetting().CSRFileKey))
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusBadRequest,
+			Msg:  "请选择要上传的文件",
+		}
+		return resp
+	}
+	if fileHeader.Size <= 0 {
+		utils.ExceptionLog(err, fmt.Sprintf("The size of %s is %d", fileHeader.Filename, fileHeader.Size))
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusBadRequest,
+			Msg:  "空文件",
+		}
+		return resp
+	}
+
+	file, err := fileHeader.Open()
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to open %s", fileHeader.Filename))
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusInternalServerError,
+			Msg:  "无法打开文件",
+		}
+		return resp
+	}
+
+	fileBytes, _ := ioutil.ReadAll(file)
+	block, rest := pem.Decode(fileBytes)
+	if block == nil || len(rest) > 0 {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to parse %s", fileHeader.Filename))
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusBadRequest,
+			Msg:  "无法解析文件",
+		}
+		return resp
+	}
+
+	csr, err := x509.ParseCertificateRequest(block.Bytes)
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to parse %s", fileHeader.Filename))
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusBadRequest,
+			Msg:  "无法解析文件",
+		}
+		return resp
+	}
+
+	resp.Country = getFirstBySplit(csr.Subject.Country)
+	resp.Province = getFirstBySplit(csr.Subject.Province)
+	resp.Locality = getFirstBySplit(csr.Subject.Locality)
+	resp.Organization = getFirstBySplit(csr.Subject.Organization)
+	resp.OrganizationalUnit = getFirstBySplit(csr.Subject.OrganizationalUnit)
+	resp.CommonName = csr.Subject.CommonName
+	resp.EmailAddress = getFirstBySplit(csr.EmailAddresses)
+	// 从 CSR 文件中获取公钥
+	bytes, err := x509.MarshalPKIXPublicKey(csr.PublicKey)
+	if err != nil {
+		utils.ExceptionLog(err, fmt.Sprintf("Fail to Marshal pk"))
+		resp.Header = ginTools.BaseRespHeader{
+			Code: http.StatusBadRequest,
+			Msg:  "无法解析公钥",
+		}
+		return resp
+	}
+	// 把公钥编码成字符串
+	pk := pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: bytes})
+	resp.PublicKey = string(pk)
+
+	resp.Header = ginTools.SuccessRespHeader
+	return resp
+}
+
+func getFirstBySplit(s []string) string {
+	if len(s) > 0 {
+		return s[0]
+	}
+	return ""
+}
+
+func CaUpdateCrlLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
+	resp := message.CaUpdateCrlResp{}
+	if !UpdateCRL() {
+		resp.Header = ginTools.SystemErrorRespHeader
+		return resp
+	}
+	resp.Header = ginTools.SuccessRespHeader
+	return resp
+}
+
+func UpdateCRL() bool {
 	crlList, err := dao.GetAllCRL()
 	if err != nil {
 		return false
@@ -192,81 +297,42 @@ func updateCRLFile() bool {
 	return ok
 }
 
-func CaFileLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
-	// request := req.(*message.CaFileReq)
-	resp := message.CaFileResp{}
-	fileHeader, err := ctx.FormFile(src.GetSetting().CSRFileKey)
-	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to read %s", src.GetSetting().CSRFileKey))
-		resp.Header = ginTools.BaseRespHeader{
-			Code: http.StatusBadRequest,
-			Msg:  "请选择要上传的文件",
-		}
+func CaSslCsrLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
+	request := req.(*message.CaSslCsrReq)
+	resp := message.CaSslCsrResp{}
+	user, ok := ctx.Get("user")
+	if !ok {
+		resp.Header = ginTools.UnauthorizedRespHeader
 		return resp
 	}
-	if fileHeader.Size <= 0 {
-		utils.ExceptionLog(err, fmt.Sprintf("The size of %s is %d", fileHeader.Filename, fileHeader.Size))
-		resp.Header = ginTools.BaseRespHeader{
-			Code: http.StatusBadRequest,
-			Msg:  "空文件",
-		}
+	u := user.(*dao.User)
+	// 存库
+	newCSR := &dao.CARequest{
+		UserID:               u.ID,
+		State:                uint(1),
+		PublicKey:            "",
+		Country:              request.Country,
+		Province:             request.Province,
+		Locality:             request.Locality,
+		Organization:         request.Organization,
+		OrganizationUnitName: request.OrganizationalUnit,
+		CommonName:           request.CommonName,
+		EmailAddress:         request.EmailAddress,
+		Type:                 definition.CertificateTypeSSL,
+		DnsNames:             request.DNSNames,
+	}
+	newCSR, ok = dao.CreateNewCRS(newCSR)
+	if !ok {
+		resp.Header = ginTools.SystemErrorRespHeader
 		return resp
 	}
-	file, err := fileHeader.Open()
-	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to open %s", fileHeader.Filename))
-		resp.Header = ginTools.BaseRespHeader{
-			Code: http.StatusInternalServerError,
-			Msg:  "无法打开文件",
-		}
+	encryptID, ok := tools.EncryptWithDES(strconv.Itoa(int(newCSR.ID)), src.GetSetting().Secret.ResponseSecret)
+	if !ok {
+		resp.Header = ginTools.SystemErrorRespHeader
 		return resp
 	}
-	fileBytes, _ := ioutil.ReadAll(file)
-	block, rest := pem.Decode(fileBytes)
-
-	if block == nil || len(rest) > 0 {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to parse %s", fileHeader.Filename))
-		resp.Header = ginTools.BaseRespHeader{
-			Code: http.StatusBadRequest,
-			Msg:  "无法解析文件",
-		}
-		return resp
-	}
-	csr, err := x509.ParseCertificateRequest(block.Bytes)
-	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to parse %s", fileHeader.Filename))
-		resp.Header = ginTools.BaseRespHeader{
-			Code: http.StatusBadRequest,
-			Msg:  "无法解析文件",
-		}
-		return resp
-	}
-	resp.Country = getFirstBySplit(csr.Subject.Country)
-	resp.Province = getFirstBySplit(csr.Subject.Province)
-	resp.Locality = getFirstBySplit(csr.Subject.Locality)
-	resp.Organization = getFirstBySplit(csr.Subject.Organization)
-	resp.OrganizationalUnit = getFirstBySplit(csr.Subject.OrganizationalUnit)
-	resp.CommonName = csr.Subject.CommonName
-	resp.EmailAddress = getFirstBySplit(csr.EmailAddresses)
-	// 从 CSR 文件中获取公钥
-	bytes, err := x509.MarshalPKIXPublicKey(csr.PublicKey)
-	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to Marshal pk"))
-		resp.Header = ginTools.BaseRespHeader{
-			Code: http.StatusBadRequest,
-			Msg:  "无法解析公钥",
-		}
-		return resp
-	}
-	pk := pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: bytes})
-	resp.PublicKey = string(pk)
+	base64ID := base64.StdEncoding.EncodeToString(encryptID)
+	resp.CSRID = base64ID
 	resp.Header = ginTools.SuccessRespHeader
 	return resp
-}
-
-func getFirstBySplit(s []string) string {
-	if len(s) > 0 {
-		return s[0]
-	}
-	return ""
 }

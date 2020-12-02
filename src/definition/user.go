@@ -10,6 +10,7 @@ type CertificateFullAmountFields struct {
 	Version               uint   `json:"version"`                 // 版本号
 	SerialNumber          uint   `json:"serial_number"`           // 序列号
 	Statue                uint   `json:"statue"`                  // 证书状态
+	Type                  uint   `json:"type"`                    // 证书类型
 	NotBefore             int64  `json:"not_before"`              // 证书起始时间
 	NotAfter              int64  `json:"not_after"`               // 证书过期时间
 	Subject               string `json:"subject"`                 // 证书主体
@@ -21,4 +22,5 @@ type CertificateFullAmountFields struct {
 	ExtKeyUsage           string `json:"ext_key_usage"`           // 增强型密钥用法
 	PublicKey             string `json:"public_key"`              // 公钥
 	DownloadLink          string `json:"download_link"`           // 证书下载路径
+	DNSName               string `json:"dns_name"`                // 使用者可选名称
 }

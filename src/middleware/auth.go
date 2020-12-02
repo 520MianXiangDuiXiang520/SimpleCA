@@ -4,6 +4,7 @@ import (
 	"github.com/520MianXiangDuiXiang520/GinTools/gin_tools/middleware"
 	"github.com/gin-gonic/gin"
 	"simple_ca/src/dao"
+	"simple_ca/src/definition"
 )
 
 func TokenAuth(context *gin.Context) (middleware.UserBase, bool) {
@@ -14,8 +15,7 @@ func TokenAuth(context *gin.Context) (middleware.UserBase, bool) {
 	if len(token) != 32 {
 		return nil, false
 	}
-	user, ok := dao.GetUserByToken(token)
-
+	user, ok := dao.GetUserAndExtensionTime(token, definition.OneHour/2)
 	if !ok {
 		return nil, false
 	}

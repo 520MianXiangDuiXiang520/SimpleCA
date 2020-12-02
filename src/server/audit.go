@@ -16,6 +16,7 @@ import (
 	"simple_ca/src/message"
 	"simple_ca/src/tools"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -38,6 +39,12 @@ func AuditListLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 		k.EmailAddress = v.EmailAddress
 		k.OrganizationalUnit = v.OrganizationUnitName
 		k.Country = v.Country
+		switch v.Type {
+		case definition.CertificateTypeCodeSign:
+			k.TypeStr = "CodeSign"
+		case definition.CertificateTypeSSL:
+			k.TypeStr = "SSL"
+		}
 		resp.CRSList[i] = k
 	}
 	resp.Header = ginTools.SuccessRespHeader
@@ -112,16 +119,31 @@ func AuditPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 		src.GetSetting().Secret.UserCerPath, cName)
 	// 获取 CA 根证书和私钥
 	rootCer, rootPK := src.GetCARootCer()
-	// 根据 CA 根证书和私钥为用户签发证书
-	ok = tools.CreateNewCertificate(&rootCer, big.NewInt(int64(int(c.ID))), pkix.Name{
+
+	subject := pkix.Name{
 		Country:            []string{csr.Country},
 		Province:           []string{csr.Province},
 		Locality:           []string{csr.Locality},
 		Organization:       []string{csr.Organization},
 		OrganizationalUnit: []string{csr.OrganizationUnitName},
 		CommonName:         csr.CommonName,
-	}, csr.PublicKey, &rootPK, notBefore, notAfter,
-		[]string{src.GetSetting().CRLSetting.CRLDistributionPoint}, cerFileName)
+	}
+	crlDP := []string{src.GetSetting().CRLSetting.CRLDistributionPoint}
+
+	switch csr.Type {
+	// 签发代码签名证书
+	case definition.CertificateTypeCodeSign:
+		ok = tools.CreateCodeSignCert(&rootCer, big.NewInt(int64(int(c.ID))), subject,
+			csr.PublicKey, &rootPK, notBefore, notAfter, crlDP, cerFileName)
+	// 签发 SSL 证书
+	case definition.CertificateTypeSSL:
+		dnsNames := strings.Split(csr.DnsNames, " ")
+		ok = tools.CreateSSLCert(&rootCer, big.NewInt(int64(int(c.ID))), subject,
+			csr.PublicKey, &rootPK, notBefore, notAfter, crlDP, dnsNames, cerFileName)
+	default:
+		resp.Header = ginTools.ParamErrorRespHeader
+		return resp
+	}
 	if !ok {
 		resp.Header = ginTools.BaseRespHeader{
 			Code: http.StatusInternalServerError,

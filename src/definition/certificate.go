@@ -10,3 +10,8 @@ const (
 	// 证书过期
 	CertificateStateExpired
 )
+
+const (
+	CertificateTypeCodeSign = iota + 1
+	CertificateTypeSSL
+)

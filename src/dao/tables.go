@@ -28,8 +28,9 @@ type UserToken struct {
 // 证书请求表
 type CARequest struct {
 	gorm.Model
-	UserID               uint   `gorm:"not null"`
-	State                uint   `gorm:"not null"`
+	UserID               uint `gorm:"not null"`
+	State                uint `gorm:"not null"`
+	Type                 uint
 	PublicKey            string `gorm:"type:text;not null"`
 	Country              string `gorm:"size:20"`
 	Province             string
@@ -38,6 +39,7 @@ type CARequest struct {
 	OrganizationUnitName string
 	CommonName           string
 	EmailAddress         string `gorm:"not null"`
+	DnsNames             string
 }
 
 // 证书表

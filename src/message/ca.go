@@ -16,12 +16,12 @@ type CaRequestResp struct {
 }
 
 // 代码签名请求头
-type CaCodeSignatureRequestReq struct {
+type CaUploadPKReq struct {
 	CSRID     string `json:"csrid"      check:"not null"`
 	PublicKey string `json:"public_key" check:"not null"`
 }
 
-func (r *CaCodeSignatureRequestReq) JSON(ctx *gin.Context) error {
+func (r *CaUploadPKReq) JSON(ctx *gin.Context) error {
 	return ctx.ShouldBindJSON(&r)
 }
 
@@ -30,35 +30,60 @@ type CaCsrResp struct {
 	CSRID  string                  `json:"csr_id"`
 }
 
-type CaCsrReq struct {
+type CaCodeSignCsrReq struct {
 	definition.CertificateSigningRequest
 }
 
-func (r *CaCsrReq) JSON(ctx *gin.Context) error {
+func (r *CaCodeSignCsrReq) JSON(ctx *gin.Context) error {
 	return ctx.ShouldBindJSON(&r)
 }
 
-type CaCrlResp struct {
+type CaRevokeResp struct {
 	Header ginTools.BaseRespHeader `json:"header"`
 }
 
-type CaCrlReq struct {
+type CaRevokeReq struct {
 	SerialNumber uint `json:"serial_number" check:"not null"` // 序列号
 }
 
-func (r *CaCrlReq) JSON(ctx *gin.Context) error {
+func (r *CaRevokeReq) JSON(ctx *gin.Context) error {
 	return ctx.ShouldBindJSON(&r)
 }
 
-type CaFileResp struct {
+type CaCSRFileResp struct {
 	Header ginTools.BaseRespHeader `json:"header"`
 	definition.CertificateSigningRequest
 	PublicKey string `json:"public_key"`
 }
 
-type CaFileReq struct {
+type CaCSRFileReq struct {
 }
 
-func (r *CaFileReq) JSON(ctx *gin.Context) error {
+func (r *CaCSRFileReq) JSON(ctx *gin.Context) error {
+	return ctx.ShouldBindJSON(&r)
+}
+
+type CaUpdateCrlResp struct {
+	Header ginTools.BaseRespHeader `json:"header"`
+}
+
+type CaUpdateCrlReq struct {
+}
+
+func (r *CaUpdateCrlReq) JSON(ctx *gin.Context) error {
+	return ctx.ShouldBindJSON(&r)
+}
+
+type CaSslCsrResp struct {
+	Header ginTools.BaseRespHeader `json:"header"`
+	CSRID  string                  `json:"csr_id"`
+}
+
+type CaSslCsrReq struct {
+	definition.CertificateSigningRequest
+	DNSNames string `json:"dns_names" check:"not null"`
+}
+
+func (r *CaSslCsrReq) JSON(ctx *gin.Context) error {
 	return ctx.ShouldBindJSON(&r)
 }
