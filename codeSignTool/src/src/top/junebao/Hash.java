@@ -31,11 +31,14 @@ public class Hash {
 
     public static String getCodeHash(String sourcePath) {
         String codeHash = "";
+        // 文件名列表
         List<String> files = new ArrayList<>();
         findFileList(new File(sourcePath), files);
+
         for (String value :  files) {
             cn.hutool.core.io.file.FileReader fileReader = new cn.hutool.core.io.file.FileReader(value);
             String result = fileReader.readString();
+
             cn.hutool.crypto.digest.Digester md5 = new cn.hutool.crypto.digest.Digester(DigestAlgorithm.SHA256);
             codeHash = md5.digestHex(codeHash + result);
         }

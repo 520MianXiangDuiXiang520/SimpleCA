@@ -25,6 +25,7 @@ public class Key {
     public static PrivateKey parseThePemPrivateKey(String filePath) {
         cn.hutool.core.io.file.FileReader fileReader = new cn.hutool.core.io.file.FileReader(filePath);
         String result = (fileReader).readString();
+
         RSA_PEM rsa = null;
         try {
             rsa = RSA_PEM.FromPEM(result);
