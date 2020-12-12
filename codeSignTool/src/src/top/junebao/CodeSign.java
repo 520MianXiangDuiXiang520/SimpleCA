@@ -66,11 +66,11 @@ public class CodeSign {
 
         // -------- 验证 ---------
 
-        String codeSign = "FbjH7hpzKGmlb5+7TpMllNiDeiDUeLut6+L+CgW3H+trYiwzmVVNL4cEymwLAhpDOvF4puJpZte4\n" +
-                "iGsbb2nhA2DBm4lAipPIBwXwEW1HcKy67w95eVxpPvprOdtD14pQg/MAPFXuH7b3pNyUJwdjZVdc\n" +
-                "fWxGMAkopqf2Mb3S5p4GUC0xt34m0WHuUsq4qmG/J6kTweikSX40pR/usiWqMVMohaH5LMwncKp+\n" +
-                "l108xzM2ws+KMYFKAPQn7TWgF4e2LmCs3mQSzf8m71Edt/1LR62B/MURvDlYxZmLPpzfYtjeHSWZ\n" +
-                "yYsmrN16RJJ/XPVvAJe5h96pCt+l4jexuLnd1Q==";
+        String codeSign = "w7c+V0nNzPcM8xkJXvnaD1Q3wZDZj0Jc/k1lsTOPELCrHP8fcU81KxCXsANR7So6u07KuRSeoCLe\n" +
+                "9GMCQGVJP9dbF78eMBOIR3zGmadldD8Z8vpYTX/dv5919MO9lEvjB7TShU0TNrFJsE5Glq/WLJtX\n" +
+                "wZHRI1ncBYcL7TGa8rbjsCPSilpEBe9F/49aj4beTwtOxO0H1kAB5070SRi29vg2G694eDehUYsa\n" +
+                "4OsxettJi+hnzx1awUk5iq+8/u0x54fznMnEp5vIDjogKywxjfsJ2AEt5nYswnYaY2hqwPSGW6Pw\n" +
+                "dSvOl7L4Nz5KLahl+qxCMDjsBC+gbSOi2qFLbg==";
         try {
             if (verification(sourcePath, cerPath, codeSign)) {
                 System.out.println("签名验证通过！");

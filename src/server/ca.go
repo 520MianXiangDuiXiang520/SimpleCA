@@ -21,6 +21,7 @@ import (
 	"time"
 )
 
+// 提交公钥
 func CaUploadPKLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
 	request := req.(*message.CaUploadPKReq)
 	resp := message.CaRequestResp{}
@@ -87,6 +88,7 @@ func CaUploadPKLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseR
 	return resp
 }
 
+// 请求生成代码签名证书
 func CaCodeSignCsrLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
 	request := req.(*message.CaCodeSignCsrReq)
 	resp := message.CaCsrResp{}
@@ -175,7 +177,7 @@ func CaRevokeLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRes
 	return resp
 }
 
-// 更新 CRL 文件
+
 func updateCRLFile() bool {
 	if time.Now().Unix() < src.GetNextUpdateCRLTime() {
 		return true
@@ -183,6 +185,7 @@ func updateCRLFile() bool {
 	return UpdateCRL()
 }
 
+// CSR 文件解析
 func CaCSRFileLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
 	// request := req.(*message.CaCSRFileReq)
 	resp := message.CaCSRFileResp{}
@@ -297,6 +300,7 @@ func UpdateCRL() bool {
 	return ok
 }
 
+// 请求生成SSL证书
 func CaSslCsrLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRespInter {
 	request := req.(*message.CaSslCsrReq)
 	resp := message.CaSslCsrResp{}

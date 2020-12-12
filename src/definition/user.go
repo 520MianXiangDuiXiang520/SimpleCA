@@ -20,7 +20,7 @@ type CertificateFullAmountFields struct {
 	CRLDistributionPoints string `json:"crl_distribution_points"` // CRL 分发点
 	KeyUsage              string `json:"key_usage"`               // 密钥用法
 	ExtKeyUsage           string `json:"ext_key_usage"`           // 增强型密钥用法
-	PublicKey             string `json:"public_key"`              // 公钥
+	PublicKey             string `json:"public_key"`              // 公钥1
 	DownloadLink          string `json:"download_link"`           // 证书下载路径
 	DNSName               string `json:"dns_name"`                // 使用者可选名称
 }
