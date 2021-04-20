@@ -2,7 +2,7 @@ package check
 
 import (
 	"fmt"
-	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
+	ginTools "github.com/520MianXiangDuiXiang520/ginUtils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"simple_ca/src/message"

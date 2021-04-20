@@ -2,10 +2,12 @@ package dao
 
 import (
 	"fmt"
-	daoUtils "github.com/520MianXiangDuiXiang520/GinTools/gin_tools/dao_tools"
-	"github.com/520MianXiangDuiXiang520/GinTools/log_tools"
+	daoUtils "github.com/520MianXiangDuiXiang520/GoTools/dao"
 	"github.com/jinzhu/gorm"
+	"log"
+	"os"
 	"simple_ca/src"
+	"simple_ca/src/tools"
 	"time"
 )
 
@@ -14,7 +16,7 @@ func HasUserByUP(username, password string) (*User, bool) {
 	user, err := selectUserByUNamePSD(username, password)
 	if err != nil {
 		msg := fmt.Sprintf("Fail to get user By username(%s), password(%s)", username, password)
-		utils.ExceptionLog(err, msg)
+		tools.ExceptionLog(err, msg)
 		return nil, false
 	}
 	return &user, user.ID != 0
@@ -24,7 +26,7 @@ func HasUserByID(id uint) (user *User, ok bool) {
 	user, err := selectUserByID(daoUtils.GetDB(), id)
 	if err != nil {
 		msg := fmt.Sprintf("Fail to select user by id: %d", id)
-		utils.ExceptionLog(err, msg)
+		tools.ExceptionLog(err, msg)
 		return nil, false
 	}
 	if user.ID == 0 {
@@ -61,7 +63,7 @@ func deleteTokenByUserID(db *gorm.DB, userID uint) (err error) {
 func DeleteTokenByUserID(uid uint) bool {
 	if err := deleteTokenByUserID(daoUtils.GetDB(), uid); err != nil {
 		msg := fmt.Sprintf("Fail to delete token by userID(%d)", uid)
-		utils.ExceptionLog(err, msg)
+		tools.ExceptionLog(err, msg)
 		return false
 	}
 	return true
@@ -75,11 +77,11 @@ func InsertToken(user *User, token string) (ok bool) {
 			return
 		}
 		return insertToken(db, user, token)
-	}, []interface{}{&gorm.DB{}, user, token})
+	}, []interface{}{&gorm.DB{}, user, token}, log.New(os.Stdout, "[ Transaction ] ", log.LstdFlags))
 
 	if err != nil {
 		msg := fmt.Sprintf("Fail to insert token; user = %v, token = %v", user, token)
-		utils.ExceptionLog(err, msg)
+		tools.ExceptionLog(err, msg)
 		return false
 	}
 	return true
@@ -90,7 +92,7 @@ func InsertUser(user *User) (ok bool) {
 	err := db.Create(user).Error
 	if err != nil {
 		msg := fmt.Sprintf("Fail to insert new user; %v", user)
-		utils.ExceptionLog(err, msg)
+		tools.ExceptionLog(err, msg)
 		return false
 	}
 	return true
@@ -107,14 +109,14 @@ func GetUserByToken(token string) (user *User, ok bool) {
 	ut, err := selectUserTokenByToken(daoUtils.GetDB(), token)
 	if err != nil {
 		msg := fmt.Sprintf("Fail to select userID by token, token: %s", token)
-		utils.ExceptionLog(err, msg)
+		tools.ExceptionLog(err, msg)
 		return nil, false
 	}
 	id := ut.UserID
 	user, err = selectUserByID(daoUtils.GetDB(), id)
 	if err != nil {
 		msg := fmt.Sprintf("Fail to select user by id, id: %d", id)
-		utils.ExceptionLog(err, msg)
+		tools.ExceptionLog(err, msg)
 		return nil, false
 	}
 	return user, true
@@ -124,7 +126,7 @@ func GetUserByName(name string) (*User, bool) {
 	u := User{}
 	err := daoUtils.GetDB().Where("username = ?", name).First(&u).Error
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("select user by name (%s) Fail", name))
+		tools.ExceptionLog(err, fmt.Sprintf("select user by name (%s) Fail", name))
 		return nil, false
 	}
 	return &u, true
@@ -133,7 +135,7 @@ func GetUserByName(name string) (*User, bool) {
 func updateUserToken(db *gorm.DB, ut *UserToken) error {
 	err := db.Model(&UserToken{}).Where("id = ?", ut.ID).Update(ut).Error
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to update userToken: %v", ut))
+		tools.ExceptionLog(err, fmt.Sprintf("Fail to update userToken: %v", ut))
 		return err
 	}
 	return nil
@@ -159,9 +161,9 @@ func GetUserAndExtensionTime(token string, extentTime int64) (*User, bool) {
 		}
 		return user, nil
 	}
-	v, err := daoUtils.UseTransaction(txFunc, []interface{}{daoUtils.GetDB(), token, extentTime})
+	v, err := daoUtils.UseTransaction(txFunc, []interface{}{daoUtils.GetDB(), token, extentTime}, log.New(os.Stdout, "[ Transaction ] ", log.LstdFlags))
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to do 'getUserAndExtensionTime'"))
+		tools.ExceptionLog(err, fmt.Sprintf("Fail to do 'getUserAndExtensionTime'"))
 		return nil, false
 	}
 	user := v[0].Interface().(*User)

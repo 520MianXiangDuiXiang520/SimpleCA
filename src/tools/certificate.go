@@ -7,7 +7,6 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
-	utils "github.com/520MianXiangDuiXiang520/GinTools/log_tools"
 	"io/ioutil"
 	"math/big"
 	"os"
@@ -21,18 +20,18 @@ func DecodePemCert(p string) (*x509.Certificate, bool) {
 	filename := path.Join(path.Dir(currently), p)
 	pemTmp, err := ioutil.ReadFile(filename)
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("read %s Fail", filename))
+		ExceptionLog(err, fmt.Sprintf("read %s Fail", filename))
 		return nil, false
 	}
 	certBlock, _ := pem.Decode(pemTmp)
 	if certBlock == nil {
-		utils.ExceptionLog(err, "pem decode fail")
+		ExceptionLog(err, "pem decode fail")
 		return nil, false
 	}
 	// 证书解析
 	certBody, err := x509.ParseCertificate(certBlock.Bytes)
 	if err != nil {
-		utils.ExceptionLog(err, "fail to parse cert")
+		ExceptionLog(err, "fail to parse cert")
 		return nil, false
 	}
 	return certBody, true
@@ -54,17 +53,17 @@ func createNewCertificate(rootCer, template *x509.Certificate,
 		c, err = x509.CreateCertificate(rand.Reader, template, rootCer, pub, pk)
 	}
 	if err != nil {
-		utils.ExceptionLog(err, "Failed to create certificate")
+		ExceptionLog(err, "Failed to create certificate")
 		return false
 	}
 	certOut, err := os.Create(p)
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Failed to create %s", p))
+		ExceptionLog(err, fmt.Sprintf("Failed to create %s", p))
 		return false
 	}
 	err = pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: c})
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Failed to encode pem"))
+		ExceptionLog(err, fmt.Sprintf("Failed to encode pem"))
 		return false
 	}
 	certOut.Close()
@@ -138,17 +137,17 @@ func CreateNewCRL(cer *x509.Certificate, pk *rsa.PrivateKey,
 	revokedCerts []pkix.RevokedCertificate, now, expiry time.Time, fileName string) bool {
 	crlBytes, err := cer.CreateCRL(rand.Reader, pk, revokedCerts, now, expiry)
 	if err != nil {
-		utils.ExceptionLog(err, "Fail to create CRL")
+		ExceptionLog(err, "Fail to create CRL")
 		return false
 	}
 	certOut, err := os.Create(fileName)
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Failed to create %s", fileName))
+		ExceptionLog(err, fmt.Sprintf("Failed to create %s", fileName))
 		return false
 	}
 	err = pem.Encode(certOut, &pem.Block{Type: "X509 CRL", Bytes: crlBytes})
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Failed to encode pem"))
+		ExceptionLog(err, fmt.Sprintf("Failed to encode pem"))
 		return false
 	}
 	certOut.Close()
@@ -161,12 +160,12 @@ func ParseCRLUpdateTime(filePath string) (int64, bool) {
 	filename := path.Join(path.Dir(currently), filePath)
 	crlF, err := ioutil.ReadFile(filename)
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to read csr: %s", filename))
+		ExceptionLog(err, fmt.Sprintf("Fail to read csr: %s", filename))
 		return 0, false
 	}
 	crl, err := x509.ParseCRL(crlF)
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to parse csr: %s", filename))
+		ExceptionLog(err, fmt.Sprintf("Fail to parse csr: %s", filename))
 		return 0, false
 	}
 	return crl.TBSCertList.ThisUpdate.Unix(), true

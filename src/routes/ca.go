@@ -1,8 +1,8 @@
 package routes
 
 import (
-	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
-	middlewareTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools/middleware"
+	ginTools "github.com/520MianXiangDuiXiang520/ginUtils"
+	middlewareTools "github.com/520MianXiangDuiXiang520/ginUtils/middleware"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"simple_ca/src/check"

@@ -3,17 +3,19 @@ package dao
 import (
 	"errors"
 	"fmt"
-	daoUtils "github.com/520MianXiangDuiXiang520/GinTools/gin_tools/dao_tools"
-	"github.com/520MianXiangDuiXiang520/GinTools/log_tools"
+	daoUtils "github.com/520MianXiangDuiXiang520/GoTools/dao"
 	"github.com/jinzhu/gorm"
+	"log"
+	"os"
 	"simple_ca/src/definition"
+	"simple_ca/src/tools"
 )
 
 func CreateNewCRS(request *CARequest) (res *CARequest, ok bool) {
 	res, err := insertCRS(request)
 	if err != nil {
 		msg := fmt.Sprintf("Fail to insert csr: %v", request)
-		utils.ExceptionLog(err, msg)
+		tools.ExceptionLog(err, msg)
 		return nil, false
 	}
 	return res, true
@@ -31,7 +33,7 @@ func HasCRSByID(id uint) (ok bool) {
 	crs, err := selectCRSByID(id)
 	if err != nil {
 		msg := fmt.Sprintf("Fail to select crs by id(%d)", id)
-		utils.ExceptionLog(err, msg)
+		tools.ExceptionLog(err, msg)
 		return false
 	}
 	return crs.ID == id
@@ -41,7 +43,7 @@ func GetCRSByID(id uint) (*CARequest, bool) {
 	csr, err := selectCRSByID(id)
 	if err != nil || csr.ID != id {
 		msg := fmt.Sprintf("Fail to select crs by id(%d)", id)
-		utils.ExceptionLog(err, msg)
+		tools.ExceptionLog(err, msg)
 		return nil, false
 	}
 	return csr, true
@@ -59,7 +61,7 @@ func AddPublicKeyForRequest(csr *CARequest, pk string, uid uint) (*CARequest, bo
 	err := updateCRSByID(daoUtils.GetDB(), csr, csr.ID)
 	if err != nil {
 		msg := fmt.Sprintf("Fail to update csr, csr = %v", csr)
-		utils.ExceptionLog(err, msg)
+		tools.ExceptionLog(err, msg)
 		return nil, false
 	}
 	return csr, true
@@ -75,7 +77,7 @@ func updateCRSStateByID(db *gorm.DB, state, id uint) (err error) {
 	err = db.Model(&CARequest{}).Where("id = ?",
 		id).Updates(map[string]interface{}{"state": state}).Error
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to update csr state(%d) by id(%d)", state, id))
+		tools.ExceptionLog(err, fmt.Sprintf("Fail to update csr state(%d) by id(%d)", state, id))
 		return err
 	}
 	return err
@@ -85,7 +87,7 @@ func selectCertificateByID(db *gorm.DB, id uint) (*Certificate, error) {
 	c := Certificate{}
 	err := db.Where("id = ?", id).First(&c).Error
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to select Certificate by id(%d)", id))
+		tools.ExceptionLog(err, fmt.Sprintf("Fail to select Certificate by id(%d)", id))
 		return nil, err
 	}
 	return &c, err
@@ -107,7 +109,7 @@ func insertNewCRL(db *gorm.DB, serial uint, expire int64) (*CRL, error) {
 	}
 	err := db.Create(&crl).Error
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to insert crl: %v", crl))
+		tools.ExceptionLog(err, fmt.Sprintf("Fail to insert crl: %v", crl))
 		return nil, err
 	}
 	return &crl, nil
@@ -117,7 +119,7 @@ func updateCertificateStateByID(db *gorm.DB, state, id uint) error {
 	err := db.Model(&Certificate{}).Where("id = ?",
 		id).Updates(map[string]interface{}{"state": state}).Error
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to update Certificate state(%d) by id(%d)", state, id))
+		tools.ExceptionLog(err, fmt.Sprintf("Fail to update Certificate state(%d) by id(%d)", state, id))
 		return err
 	}
 	return err
@@ -142,7 +144,7 @@ func CreateNewCRL(csrID, serialNum uint, expired int64) (*CRL, error) {
 			return nil, err
 		}
 		return crl, nil
-	}, []interface{}{&gorm.DB{}, serialNum, expired})
+	}, []interface{}{&gorm.DB{}, serialNum, expired}, log.New(os.Stdout, "[ Transaction ] ", log.LstdFlags))
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +156,7 @@ func GetAllCRL() ([]CRL, error) {
 	crlList := make([]CRL, 0)
 	err := daoUtils.GetDB().Find(&crlList).Error
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to get all crls"))
+		tools.ExceptionLog(err, fmt.Sprintf("Fail to get all crls"))
 		return nil, err
 	}
 	return crlList, nil

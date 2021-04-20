@@ -4,9 +4,8 @@ import (
 	"crypto/x509/pkix"
 	"encoding/base64"
 	"fmt"
-	"github.com/520MianXiangDuiXiang520/GinTools/email_tools"
-	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
-	utils "github.com/520MianXiangDuiXiang520/GinTools/log_tools"
+	email_tools "github.com/520MianXiangDuiXiang520/GoTools/email"
+	ginTools "github.com/520MianXiangDuiXiang520/ginUtils"
 	"github.com/gin-gonic/gin"
 	"math/big"
 	"net/http"
@@ -54,7 +53,7 @@ func AuditListLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 func checkCSRID(CSRID string) (*dao.CARequest, bool) {
 	csrIDBytes, err := base64.StdEncoding.DecodeString(CSRID)
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Base64 decoding failed， input = %s", CSRID))
+		tools.ExceptionLog(err, fmt.Sprintf("Base64 decoding failed， input = %s", CSRID))
 		return nil, false
 	}
 	csrIDStr, ok := tools.DecryptWithDES(csrIDBytes, src.GetSetting().Secret.ResponseSecret)
@@ -158,8 +157,8 @@ func AuditPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 		"requestTime": csr.CreatedAt.Format("2006-01-02 15:04:05"),
 		"time":        time.Now().Format("2006-01-02 15:04:05"),
 	})
-	err := email_tools.Send(&email_tools.EmailCTX{
-		ToList: []email_tools.EmailUser{
+	err := email_tools.Send(&email_tools.Context{
+		ToList: []email_tools.Role{
 			{Address: user.Email, Name: user.Username},
 		},
 		Subject: "证书申请通过通知",
@@ -212,8 +211,8 @@ func AuditUnPassLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.Base
 		"requestTime": csr.CreatedAt.Format("2006-01-02 15:04:05"),
 		"time":        time.Now().Format("2006-01-02 15:04:05"),
 	})
-	err := email_tools.Send(&email_tools.EmailCTX{
-		ToList: []email_tools.EmailUser{
+	err := email_tools.Send(&email_tools.Context{
+		ToList: []email_tools.Role{
 			{Address: user.Email, Name: user.Username},
 		},
 		Subject: "证书申请驳回通知",

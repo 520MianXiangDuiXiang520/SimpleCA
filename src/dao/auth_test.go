@@ -2,15 +2,14 @@ package dao
 
 import (
 	"fmt"
-	daoUtils "github.com/520MianXiangDuiXiang520/GinTools/gin_tools/dao_tools"
+	daoUtils "github.com/520MianXiangDuiXiang520/GoTools/dao"
 	"simple_ca/src"
 	"simple_ca/src/definition"
 	"testing"
-	"time"
 )
 
 func init() {
-	daoUtils.InitDBSetting(src.GetSetting().Database, 10, 30, time.Second*100, true)
+	daoUtils.InitDBSetting(src.GetSetting().Database)
 }
 
 func TestHasUserByUP(t *testing.T) {

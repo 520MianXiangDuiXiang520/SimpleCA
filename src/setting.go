@@ -5,8 +5,8 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
-	settingTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools/setting_tools"
-	utils "github.com/520MianXiangDuiXiang520/GinTools/log_tools"
+	"github.com/520MianXiangDuiXiang520/GoTools/json"
+	path2 "github.com/520MianXiangDuiXiang520/GoTools/path"
 	"io/ioutil"
 	"os"
 	"path"
@@ -55,25 +55,62 @@ type AuthorityInfoAccess struct {
 	IssuingCertificateURL string `json:"issuing_certificate_url"` // 颁发者根证书路径
 }
 
-type Setting struct {
-	Database            *settingTools.DBSetting `json:"database"`
-	AuthSetting         *AuthSetting            `json:"auth_setting"`
-	Secret              *Secret                 `json:"secret"`
-	SMTPSetting         *SMTPSetting            `json:"smtp_setting"`
-	SiteLink            string                  `json:"site_link"`
-	CRLSetting          *CRLSetting             `json:"crl_setting"`
-	CSRFileKey          string                  `json:"csr_file_key"`
-	AuthorityInfoAccess *AuthorityInfoAccess    `json:"authority_info_access"`
+type MySQLConn struct {
+	Engine    string        `json:"engine"`
+	DBName    string        `json:"db_name"`
+	User      string        `json:"user"`
+	Password  string        `json:"password"`
+	Host      string        `json:"host"`
+	Port      int           `json:"port"`
+	MIdleConn int           `json:"max_idle_conn"` // 最大空闲连接数
+	MOpenConn int           `json:"max_open_conn"` // 最大打开连接数
+	MLifetime time.Duration `json:"max_lifetime"`  // 连接超时时间
+	LogMode   bool          `json:"log_mode"`
 }
 
-var setting = &Setting{}
-var once, caOnce, crlOnce sync.Once
+type Setting struct {
+	Database            *MySQLConn           `json:"database"`
+	AuthSetting         *AuthSetting         `json:"auth_setting"`
+	Secret              *Secret              `json:"secret"`
+	SMTPSetting         *SMTPSetting         `json:"smtp_setting"`
+	SiteLink            string               `json:"site_link"`
+	CRLSetting          *CRLSetting          `json:"crl_setting"`
+	CSRFileKey          string               `json:"csr_file_key"`
+	AuthorityInfoAccess *AuthorityInfoAccess `json:"authority_info_access"`
+}
 
-func GetSetting() Setting {
-	once.Do(func() {
-		settingTools.InitSetting(setting, "../setting.json")
-	})
-	return *setting
+var setting *Setting
+var settingLock sync.Mutex
+var caOnce, crlOnce sync.Once
+
+func InitSetting(filePath string) {
+	defer func() {
+		if e := recover(); e != nil {
+			settingLock.Unlock()
+		}
+	}()
+	filename := filePath
+	if !path2.IsAbs(filePath) {
+		_, currently, _, _ := runtime.Caller(1)
+		filename = path.Join(path.Dir(currently), filePath)
+	}
+	if setting == nil {
+		settingLock.Lock()
+		if setting == nil {
+			err := json.FromFileLoadToObj(&setting, filename)
+			if err != nil {
+				panic("read setting error!")
+			}
+		}
+		settingLock.Unlock()
+	}
+}
+
+func GetSetting() *Setting {
+	if setting == nil {
+		panic("setting Uninitialized！")
+	}
+	return setting
 }
 
 var CARootCer = &x509.Certificate{}
@@ -94,7 +131,7 @@ func loadCAKey() (rootRCer *x509.Certificate, rootRPK *rsa.PrivateKey) {
 	filename := path.Join(path.Dir(currently), pkName)
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("open %s Fail", filename))
+		tools.ExceptionLog(err, fmt.Sprintf("open %s Fail", filename))
 		panic("CAPrivateKeyAcquisitionFailed")
 	}
 	r, ok := tools.DecodeRSAPrivateKey(data)

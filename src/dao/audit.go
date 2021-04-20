@@ -3,10 +3,10 @@ package dao
 import (
 	"errors"
 	"fmt"
-	"github.com/520MianXiangDuiXiang520/GinTools/gin_tools/dao_tools"
-	logTools "github.com/520MianXiangDuiXiang520/GinTools/log_tools"
+	dao_tools "github.com/520MianXiangDuiXiang520/GoTools/dao"
 	"github.com/jinzhu/gorm"
 	"simple_ca/src/definition"
+	"simple_ca/src/tools"
 )
 
 func GetCRSsByState(state uint) (res []CARequest, ok bool) {
@@ -25,7 +25,7 @@ func GetCRSsByState(state uint) (res []CARequest, ok bool) {
 
 	}
 	if err != nil {
-		logTools.ExceptionLog(err,
+		tools.ExceptionLog(err,
 			fmt.Sprintf("Failed to query CRS list by status （%d）", state))
 		return nil, false
 	}
@@ -60,7 +60,7 @@ func SetCSRState(crs *CARequest, state uint) (*CARequest, bool) {
 		return nil, false
 	}
 	if err != nil {
-		logTools.ExceptionLog(err,
+		tools.ExceptionLog(err,
 			fmt.Sprintf("Fail to update csr state from %d to %d", oldState, state))
 		return nil, false
 	}
@@ -70,7 +70,7 @@ func SetCSRState(crs *CARequest, state uint) (*CARequest, bool) {
 func CreateNewCertificate(c *Certificate) (*Certificate, bool) {
 	r, err := insertNewCertificate(dao_tools.GetDB(), c)
 	if err != nil || r.ID == 0 {
-		logTools.ExceptionLog(err,
+		tools.ExceptionLog(err,
 			fmt.Sprintf("Fail to insert Certificate： %v", c))
 		return nil, false
 	}

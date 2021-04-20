@@ -2,10 +2,10 @@ package definition
 
 import (
 	"fmt"
-	utils "github.com/520MianXiangDuiXiang520/GinTools/log_tools"
 	"io/ioutil"
 	"path"
 	"runtime"
+	"simple_ca/src/tools"
 	"strings"
 )
 
@@ -15,7 +15,7 @@ func getEmailTemp(fail string, dict map[string]string) string {
 	fmt.Println(filename)
 	temp, err := ioutil.ReadFile(filename)
 	if err != nil {
-		utils.ExceptionLog(err, "")
+		tools.ExceptionLog(err, "")
 		panic("Read temp Fail")
 	}
 	t := string(temp)

@@ -1,7 +1,7 @@
 package message
 
 import (
-	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
+	ginTools "github.com/520MianXiangDuiXiang520/ginUtils"
 	"github.com/gin-gonic/gin"
 )
 

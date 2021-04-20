@@ -6,8 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
-	ginTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools"
-	utils "github.com/520MianXiangDuiXiang520/GinTools/log_tools"
+	ginTools "github.com/520MianXiangDuiXiang520/ginUtils"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"math/big"
@@ -177,7 +176,6 @@ func CaRevokeLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRes
 	return resp
 }
 
-
 func updateCRLFile() bool {
 	if time.Now().Unix() < src.GetNextUpdateCRLTime() {
 		return true
@@ -191,7 +189,7 @@ func CaCSRFileLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 	resp := message.CaCSRFileResp{}
 	fileHeader, err := ctx.FormFile(src.GetSetting().CSRFileKey)
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to read %s", src.GetSetting().CSRFileKey))
+		tools.ExceptionLog(err, fmt.Sprintf("Fail to read %s", src.GetSetting().CSRFileKey))
 		resp.Header = ginTools.BaseRespHeader{
 			Code: http.StatusBadRequest,
 			Msg:  "请选择要上传的文件",
@@ -199,7 +197,7 @@ func CaCSRFileLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 		return resp
 	}
 	if fileHeader.Size <= 0 {
-		utils.ExceptionLog(err, fmt.Sprintf("The size of %s is %d", fileHeader.Filename, fileHeader.Size))
+		tools.ExceptionLog(err, fmt.Sprintf("The size of %s is %d", fileHeader.Filename, fileHeader.Size))
 		resp.Header = ginTools.BaseRespHeader{
 			Code: http.StatusBadRequest,
 			Msg:  "空文件",
@@ -209,7 +207,7 @@ func CaCSRFileLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 
 	file, err := fileHeader.Open()
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to open %s", fileHeader.Filename))
+		tools.ExceptionLog(err, fmt.Sprintf("Fail to open %s", fileHeader.Filename))
 		resp.Header = ginTools.BaseRespHeader{
 			Code: http.StatusInternalServerError,
 			Msg:  "无法打开文件",
@@ -220,7 +218,7 @@ func CaCSRFileLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 	fileBytes, _ := ioutil.ReadAll(file)
 	block, rest := pem.Decode(fileBytes)
 	if block == nil || len(rest) > 0 {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to parse %s", fileHeader.Filename))
+		tools.ExceptionLog(err, fmt.Sprintf("Fail to parse %s", fileHeader.Filename))
 		resp.Header = ginTools.BaseRespHeader{
 			Code: http.StatusBadRequest,
 			Msg:  "无法解析文件",
@@ -230,7 +228,7 @@ func CaCSRFileLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 
 	csr, err := x509.ParseCertificateRequest(block.Bytes)
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to parse %s", fileHeader.Filename))
+		tools.ExceptionLog(err, fmt.Sprintf("Fail to parse %s", fileHeader.Filename))
 		resp.Header = ginTools.BaseRespHeader{
 			Code: http.StatusBadRequest,
 			Msg:  "无法解析文件",
@@ -248,7 +246,7 @@ func CaCSRFileLogic(ctx *gin.Context, req ginTools.BaseReqInter) ginTools.BaseRe
 	// 从 CSR 文件中获取公钥
 	bytes, err := x509.MarshalPKIXPublicKey(csr.PublicKey)
 	if err != nil {
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to Marshal pk"))
+		tools.ExceptionLog(err, fmt.Sprintf("Fail to Marshal pk"))
 		resp.Header = ginTools.BaseRespHeader{
 			Code: http.StatusBadRequest,
 			Msg:  "无法解析公钥",

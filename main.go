@@ -1,17 +1,18 @@
 package main
 
 import (
-	"github.com/520MianXiangDuiXiang520/GinTools/email_tools"
-	daoTools "github.com/520MianXiangDuiXiang520/GinTools/gin_tools/dao_tools"
+	"github.com/520MianXiangDuiXiang520/GoTools/dao"
+	"github.com/520MianXiangDuiXiang520/GoTools/email"
 	"github.com/gin-gonic/gin"
 	"simple_ca/src"
-	"time"
 )
 
 func init() {
+	src.InitSetting("./setting.json")
 	smtp := src.GetSetting().SMTPSetting
-	email_tools.InitSMTPDialer(smtp.Host, smtp.Username, smtp.Password, smtp.Port)
-	daoTools.InitDBSetting(src.GetSetting().Database, 10, 30, time.Second*100, true)
+	email.InitSMTPDialer(smtp.Host, smtp.Username, smtp.Password, smtp.Port)
+	_ = dao.InitDBSetting(src.GetSetting().Database)
+
 }
 
 func main() {

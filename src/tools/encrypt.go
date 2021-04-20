@@ -13,7 +13,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	utils "github.com/520MianXiangDuiXiang520/GinTools/log_tools"
 	"os"
 
 	"strings"
@@ -42,7 +41,7 @@ func HashByMD5(strList []string) (h string) {
 func DecryptWithDES(msgSplit []byte, key string) (r string, ok bool) {
 	defer func() {
 		if err := recover(); err != nil {
-			utils.ExceptionLog(errors.New("DecryptFail"),
+			ExceptionLog(errors.New("DecryptFail"),
 				fmt.Sprintf("%s Decryption failed： %v", msgSplit, err))
 			ok = false
 		}
@@ -79,7 +78,7 @@ func PKCSUnPadding(origData []byte) ([]byte, bool) {
 func EncryptWithDES(msg, key string) (r []byte, ok bool) {
 	defer func() {
 		if err := recover(); err != nil {
-			utils.ExceptionLog(errors.New("EncryptFail"),
+			ExceptionLog(errors.New("EncryptFail"),
 				fmt.Sprintf("%s Encryption failed： %v", msg, err))
 			ok = false
 		}
@@ -114,13 +113,13 @@ func PKCSPadding(origData []byte, blockSize int) []byte {
 func DecodeRSAPublicKey(input []byte) (interface{}, bool) {
 	block, _ := pem.Decode(input)
 	if block == nil || (block.Type != "PUBLIC KEY" && block.Type != "RSA PUBLIC KEY") {
-		utils.ExceptionLog(errors.New("DecodeRSAPublicKeyFail"),
+		ExceptionLog(errors.New("DecodeRSAPublicKeyFail"),
 			"failed to decode PEM block containing public key")
 		return nil, false
 	}
 	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
-		utils.ExceptionLog(errors.New("ParsePKIXPublicKeyFail"),
+		ExceptionLog(errors.New("ParsePKIXPublicKeyFail"),
 			"failed to parse PKIX public key")
 		return nil, false
 	}
@@ -131,13 +130,13 @@ func DecodeRSAPublicKey(input []byte) (interface{}, bool) {
 func DecodeRSAPrivateKey(input []byte) (*rsa.PrivateKey, bool) {
 	block, _ := pem.Decode(input)
 	if block == nil || block.Type != "RSA PRIVATE KEY" {
-		utils.ExceptionLog(errors.New("DecodeRSAPrivateKeyFail"),
+		ExceptionLog(errors.New("DecodeRSAPrivateKeyFail"),
 			"failed to decode PEM block containing private key")
 		return nil, false
 	}
 	pk, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		utils.ExceptionLog(errors.New("ParsePKIXPrivateKeyFail"),
+		ExceptionLog(errors.New("ParsePKIXPrivateKeyFail"),
 			"failed to parse PKCS1 private key")
 		return nil, false
 	}
@@ -151,7 +150,7 @@ func CreateRSAPrivateKeyToFile(path string, len int) bool {
 	err := pem.Encode(keyOut, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(pk)})
 	if err != nil {
 		keyOut.Close()
-		utils.ExceptionLog(err, fmt.Sprintf("Fail to encode to %s", path))
+		ExceptionLog(err, fmt.Sprintf("Fail to encode to %s", path))
 		return false
 	}
 	keyOut.Close()

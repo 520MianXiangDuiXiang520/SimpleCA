@@ -2,8 +2,7 @@ package dao
 
 import (
 	"fmt"
-	"github.com/520MianXiangDuiXiang520/GinTools/gin_tools/dao_tools"
-	utils "github.com/520MianXiangDuiXiang520/GinTools/log_tools"
+	daotools "github.com/520MianXiangDuiXiang520/GoTools/dao"
 	"github.com/jinzhu/gorm"
 	"simple_ca/src"
 	"simple_ca/src/definition"
@@ -15,7 +14,7 @@ func GetCertificateFullAmountFieldsUser(user *User) ([]definition.CertificateFul
 	issuer := fmt.Sprintf("%s, %s, %s, %s, %s, %s", issuerSetting.CommonName,
 		issuerSetting.OrganizationalUnit, issuerSetting.Organization,
 		issuerSetting.Locality, issuerSetting.Province, issuerSetting.Country)
-	cers, err := selectAllCertificateByUserID(dao_tools.GetDB(), user.ID)
+	cers, err := selectAllCertificateByUserID(daotools.GetDB(), user.ID)
 	if err != nil {
 		return nil, false
 	}
@@ -54,7 +53,7 @@ func selectAllCertificateByUserID(db *gorm.DB, userID uint) ([]Certificate, erro
 	res := make([]Certificate, 0)
 	err := db.Where("user_id = ?", userID).Find(&res).Error
 	if err != nil {
-		utils.ExceptionLog(err,
+		tools.ExceptionLog(err,
 			fmt.Sprintf("Fail to select all Certificate by user_id: %d", userID))
 		return nil, err
 	}
