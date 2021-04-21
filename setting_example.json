@@ -1,0 +1,47 @@
+{
+  "database": {
+    "engine": "mysql",
+    "db_name": "simpleCA",
+    "user": "simpleCA",
+    "password": "password",
+    "host": "localhost",
+    "port": 3306
+  },
+  "auth_setting": {
+    "token_expire_time": 30
+  },
+  "secret": {
+    "response_secret": "response_secret",
+    "ca_root_private_key_name": "root_private_key.pem",
+    "ca_root_private_key_len": 2048,
+    "user_cer_path": "/SimpleCA/cers",
+    "ca_root_cer_name": "root_cer.cer",
+    "ca_issuer_info": {
+      "country": "CN",
+      "province": "Shanxi",
+      "locality": "Taiyuan",
+      "organization": "The North University Of China",
+      "organizational_unit": "Big Data Academy",
+      "email_address": "xx@xx.com",
+      "common_name": "JuneBao"
+    },
+    "certificate_effective_time": 365,
+    "download_link": "http://localhost/cers/"
+  },
+  "smtp_setting": {
+    "host": "smtp.qq.com",
+    "port": 465,
+    "username": "xx@xx.com",
+    "password": "smtp_password"
+  },
+  "site_link": "https://junebao.top",
+  "crl_setting": {
+    "crl_distribution_point": "http://localhost/crl.crl",
+    "crl_file_name": "/SimpleCA/crl.crl",
+    "crl_update_interval": 24
+  },
+  "csr_file_key": "CSR_FILE",
+  "authority_info_access": {
+    "issuing_certificate_url": "http://localhost/root_cer.cer"
+  }
+}
